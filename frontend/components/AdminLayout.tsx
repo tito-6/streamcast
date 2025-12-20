@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { LayoutDashboard, Radio, Users, Settings, LogOut, Menu, Image, Calendar, FileText } from 'lucide-react';
@@ -9,6 +9,13 @@ interface AdminLayoutProps {
 
 const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     const router = useRouter();
+
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            router.push('/login');
+        }
+    }, [router]);
 
     const navItems = [
         { name: 'Dashboard', path: '/admin', icon: LayoutDashboard },
@@ -64,7 +71,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                 </nav>
 
                 <div className="p-4 border-t border-white/10">
-                    <button className="flex items-center gap-3 w-full px-6 py-4 text-red-400 hover:bg-red-500/10 hover:text-red-300 rounded-xl transition-colors">
+                    <button onClick={() => { localStorage.removeItem('token'); router.push('/login'); }} className="flex items-center gap-3 w-full px-6 py-4 text-red-400 hover:bg-red-500/10 hover:text-red-300 rounded-xl transition-colors">
                         <LogOut size={20} />
                         <span className="font-medium">Logout</span>
                     </button>

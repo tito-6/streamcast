@@ -13,6 +13,16 @@ func GetPosts(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"data": posts})
 }
 
+func GetPost(c *gin.Context) {
+	id := c.Param("id")
+	var post models.Post
+	if err := models.DB.First(&post, id).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Post not found"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"data": post})
+}
+
 func CreatePost(c *gin.Context) {
 	var input models.Post
 	if err := c.ShouldBindJSON(&input); err != nil {

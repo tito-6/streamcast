@@ -75,6 +75,16 @@ func GetEvents(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"data": events})
 }
 
+func GetEvent(c *gin.Context) {
+	id := c.Param("id")
+	var event models.Event
+	if err := models.DB.First(&event, id).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Event not found"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"data": event})
+}
+
 func CreateEvent(c *gin.Context) {
 	var input models.Event
 	if err := c.ShouldBindJSON(&input); err != nil {

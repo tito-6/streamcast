@@ -66,8 +66,12 @@ func main() {
 		api.POST("/streams", handlers.CreateStream)
 		api.PUT("/streams/:id", handlers.UpdateStream)
 		api.DELETE("/streams/:id", handlers.DeleteStream)
+		api.POST("/streams/:id/stop", handlers.StopStream)
 
-		// Stats
+		// Search
+		api.GET("/search", handlers.SearchContent)
+
+		// Analytics
 		api.GET("/stats", handlers.GetStats)
 
 		// CMS - Users
@@ -81,12 +85,14 @@ func main() {
 
 		// CMS - Events
 		api.GET("/events", handlers.GetEvents)
+		api.GET("/events/:id", handlers.GetEvent)
 		api.POST("/events", handlers.CreateEvent)
 		api.PUT("/events/:id", handlers.UpdateEvent)
 		api.DELETE("/events/:id", handlers.DeleteEvent)
 
 		// CMS - Posts (Homepage)
 		api.GET("/posts", handlers.GetPosts)
+		api.GET("/posts/:id", handlers.GetPost)
 		api.POST("/posts", handlers.CreatePost)
 		api.PUT("/posts/:id", handlers.UpdatePost)
 		api.DELETE("/posts/:id", handlers.DeletePost)
@@ -97,5 +103,3 @@ func main() {
 		log.Fatal("Server startup failed:", err)
 	}
 }
-
-

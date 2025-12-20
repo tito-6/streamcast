@@ -34,7 +34,7 @@ const LivePage = () => {
     const fetchStatus = async () => {
       try {
         // Get the first available stream or active one
-        const res = await fetch('http://localhost:8080/api/streams');
+        const res = await fetch('/api/streams');
         const data = await res.json();
         if (data.data && data.data.length > 0) {
           // Prefer a live one
@@ -82,6 +82,19 @@ const LivePage = () => {
     let player: any = null;
 
     const initPlayer = async () => {
+      // Logic: Only initialize if we detect the stream is live.
+      if (!stream.is_live) {
+        if (flvPlayerRef.current) {
+          console.log("Stream stopped, destroying player...");
+          flvPlayerRef.current.destroy();
+          flvPlayerRef.current = null;
+        }
+        return;
+      }
+
+      // If we already have a player and it's running, don't re-init
+      if (flvPlayerRef.current) return;
+
       try {
         const flvjs = (await import('flv.js')).default;
 
@@ -89,7 +102,7 @@ const LivePage = () => {
           const videoElement = videoRef.current;
           player = flvjs.createPlayer({
             type: 'flv',
-            url: 'http://localhost:8080/live.flv',
+            url: '/live.flv',
             isLive: true,
             cors: true,
             hasAudio: true,
@@ -100,6 +113,14 @@ const LivePage = () => {
             isLive: true,
             lazyLoad: false,
           });
+
+          // Add error handling to prevent infinite loading state
+          player.on(flvjs.Events.ERROR, (err: any) => {
+            console.error("FLV Player Error:", err);
+            // If error occurs, we might want to just set is_live to false locally or retry?
+            // For now, let's just log.
+          });
+
           player.attachMediaElement(videoElement);
           player.load();
           player.play().catch((e: any) => console.log("Autoplay blocked", e));
@@ -116,11 +137,12 @@ const LivePage = () => {
     }
 
     return () => {
+      // Cleanup on unmount
       if (player) {
         player.destroy();
       }
     };
-  }, []);
+  }, [stream.is_live]); // Re-run this effect when is_live changes
 
   return (
     <Layout title={stream.title + " | Live"}>

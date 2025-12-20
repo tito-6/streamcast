@@ -5,7 +5,7 @@ const nextConfig = {
     appDir: false, // Use pages directory
   },
   images: {
-    domains: ['cdn.mock', 'localhost'],
+    domains: ['cdn.mock', 'localhost', 'assets.kooora.com', 'images.unsplash.com'],
   },
 }
 

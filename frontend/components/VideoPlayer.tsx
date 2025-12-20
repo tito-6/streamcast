@@ -14,7 +14,7 @@ interface VideoPlayerProps {
  */
 const VideoPlayer: React.FC<VideoPlayerProps> = ({ streamUrl, poster }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const playerRef = useRef<videojs.Player | null>(null);
+  const playerRef = useRef<any>(null);
 
   useEffect(() => {
     // Ensure the video element is available and the player hasn't been initialized yet

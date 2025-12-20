@@ -7,15 +7,19 @@ import Link from 'next/link';
 
 interface Post {
   id: number;
-  title: string;
-  content: string;
+  title_ar: string;
+  title_en: string;
+  title_tr: string;
+  content_ar: string;
+  content_en: string;
+  content_tr: string;
   image_url: string;
   category: string;
   created_at: string;
 }
 
 export default function HomePage() {
-  const [lang, setLang] = useState<'ar' | 'en'>('ar');
+  const [lang, setLang] = useState<'ar' | 'en' | 'tr'>('ar');
   const [status, setStatus] = useState<StreamStatus | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
 
@@ -26,7 +30,7 @@ export default function HomePage() {
 
       // Fetch posts
       try {
-        const res = await fetch('http://localhost:8080/api/posts');
+        const res = await fetch('/api/posts');
         const json = await res.json();
         if (json.data) setPosts(json.data.slice(0, 3)); // Show top 3
       } catch (err) { console.error(err); }
@@ -82,14 +86,18 @@ export default function HomePage() {
           {posts.map(post => (
             <div key={post.id} className="glass-panel group rounded-xl overflow-hidden hover:border-emerald-energy transition-all">
               <div className="h-48 bg-gray-800 overflow-hidden relative">
-                <img src={post.image_url || 'https://via.placeholder.com/400'} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt={post.title} />
+                <img src={post.image_url || 'https://via.placeholder.com/400'} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt={lang === 'ar' ? post.title_ar : post.title_en} />
                 <div className="absolute top-3 left-3 bg-midnight-black/80 backdrop-blur px-2 py-1 rounded text-xs text-emerald-energy font-bold uppercase tracking-wider">
                   {post.category}
                 </div>
               </div>
               <div className="p-6">
-                <h3 className="text-xl font-bold text-white mb-3 group-hover:text-emerald-energy transition-colors">{post.title}</h3>
-                <p className="text-white/60 text-sm line-clamp-3 mb-4">{post.content}</p>
+                <h3 className="text-xl font-bold text-white mb-3 group-hover:text-emerald-energy transition-colors">
+                  {lang === 'ar' ? post.title_ar : lang === 'tr' ? post.title_tr : post.title_en}
+                </h3>
+                <p className="text-white/60 text-sm line-clamp-3 mb-4">
+                  {lang === 'ar' ? post.content_ar : lang === 'tr' ? post.content_tr : post.content_en}
+                </p>
                 <span className="text-xs text-white/40">{new Date(post.created_at).toLocaleDateString()}</span>
               </div>
             </div>

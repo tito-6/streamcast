@@ -1,12 +1,14 @@
 import React, { ReactNode } from 'react';
 import Head from 'next/head';
+import Script from 'next/script';
 import Navbar from './Navbar';
+import Footer from './Footer';
 
 interface LayoutProps {
   children: ReactNode;
   title?: string;
   description?: string;
-  lang?: 'ar' | 'en';
+  lang?: 'ar' | 'en' | 'tr';
 }
 
 const Layout: React.FC<LayoutProps> = ({
@@ -40,21 +42,38 @@ const Layout: React.FC<LayoutProps> = ({
         <meta name="twitter:description" content={description} />
       </Head>
 
-      <div dir={lang === 'ar' ? 'rtl' : 'ltr'} lang={lang} className="min-h-screen relative">
+      {/* Google Analytics */}
+      <Script
+        src="https://www.googletagmanager.com/gtag/js?id=G-ZL71W70X4S"
+        strategy="afterInteractive"
+      />
+      <Script id="google-analytics" strategy="afterInteractive">
+        {`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){window.dataLayer.push(arguments);}
+          gtag('js', new Date());
+
+          gtag('config', 'G-ZL71W70X4S');
+        `}
+      </Script>
+
+      <div dir={lang === 'ar' ? 'rtl' : 'ltr'} lang={lang} className="min-h-screen relative flex flex-col">
         {/* Geometric Background Pattern */}
         <div className="geometric-pattern" />
 
         {/* Main Content */}
-        <div className="relative z-10">
+        <div className="relative z-10 flex-1">
           <Navbar lang={lang} />
           <main className="min-h-screen">
             {children}
           </main>
         </div>
+        <Footer />
       </div>
     </>
   );
 };
 
 export default Layout;
+
 

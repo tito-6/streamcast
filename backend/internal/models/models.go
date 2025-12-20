@@ -39,11 +39,19 @@ type Stream struct {
 
 type Event struct {
 	ID          uint           `gorm:"primaryKey" json:"id"`
-	Title       string         `json:"title"`
+	TitleAr     string         `json:"title_ar"`
+	TitleEn     string         `json:"title_en"`
+	TitleTr     string         `json:"title_tr"`
 	Sport       string         `json:"sport"`
-	League      string         `json:"league"`
-	TeamHome    string         `json:"team_home"`
-	TeamAway    string         `json:"team_away"`
+	LeagueAr    string         `json:"league_ar"`
+	LeagueEn    string         `json:"league_en"`
+	LeagueTr    string         `json:"league_tr"`
+	TeamHomeAr  string         `json:"team_home_ar"`
+	TeamHomeEn  string         `json:"team_home_en"`
+	TeamHomeTr  string         `json:"team_home_tr"`
+	TeamAwayAr  string         `json:"team_away_ar"`
+	TeamAwayEn  string         `json:"team_away_en"`
+	TeamAwayTr  string         `json:"team_away_tr"`
 	StartTime   time.Time      `json:"start_time"`
 	Venue       string         `json:"venue"`
 	Broadcaster string         `json:"broadcaster"`
@@ -57,8 +65,10 @@ type HeroBanner struct {
 	ID         uint      `gorm:"primaryKey" json:"id"`
 	TitleAr    string    `json:"title_ar"`
 	TitleEn    string    `json:"title_en"`
+	TitleTr    string    `json:"title_tr"`
 	SubtitleAr string    `json:"subtitle_ar"`
 	SubtitleEn string    `json:"subtitle_en"`
+	SubtitleTr string    `json:"subtitle_tr"`
 	ImageURL   string    `json:"image_url"`
 	IsActive   bool      `json:"is_active"`
 	CreatedAt  time.Time `json:"created_at"`
@@ -67,10 +77,14 @@ type HeroBanner struct {
 
 type Post struct {
 	ID         uint      `gorm:"primaryKey" json:"id"`
-	Title      string    `json:"title"`
-	Content    string    `json:"content"`
+	TitleAr    string    `json:"title_ar"`
+	TitleEn    string    `json:"title_en"`
+	TitleTr    string    `json:"title_tr"`
+	ContentAr  string    `json:"content_ar"`
+	ContentEn  string    `json:"content_en"`
+	ContentTr  string    `json:"content_tr"`
 	ImageURL   string    `json:"image_url"`
-	Category   string    `json:"category"` // e.g. "News", "Highlight"
+	Category   string    `json:"category"`
 	IsFeatured bool      `json:"is_featured"`
 	CreatedAt  time.Time `json:"created_at"`
 	UpdatedAt  time.Time `json:"updated_at"`

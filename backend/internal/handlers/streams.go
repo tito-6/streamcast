@@ -92,3 +92,22 @@ func GetStream(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"data": stream})
 }
+
+func StopStream(c *gin.Context) {
+	id := c.Param("id")
+	var stream models.Stream
+	if err := models.DB.First(&stream, id).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Stream not found"})
+		return
+	}
+
+	stream.IsLive = false
+	stream.IngestStatus = "stopped"
+	stream.UpdatedAt = models.DB.NowFunc()
+    
+    // In a real app with joy4/avutil, we would also find the active connection in a map and close it.
+    // For now, updating the DB will trigger the frontend to stop playback.
+    
+	models.DB.Save(&stream)
+	c.JSON(http.StatusOK, gin.H{"data": stream, "message": "Stream stopped successfully"})
+}

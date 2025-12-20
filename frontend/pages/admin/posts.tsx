@@ -5,8 +5,12 @@ import ImageUpload from '../../components/ImageUpload';
 
 interface Post {
     id: number;
-    title: string;
-    content: string;
+    title_ar: string;
+    title_en: string;
+    title_tr: string;
+    content_ar: string;
+    content_en: string;
+    content_tr: string;
     image_url: string;
     category: string;
     created_at: string;
@@ -15,8 +19,11 @@ interface Post {
 const PostsPage = () => {
     const [posts, setPosts] = useState<Post[]>([]);
     const [isEditing, setIsEditing] = useState(false);
+    const [activeTab, setActiveTab] = useState<'ar' | 'en' | 'tr'>('ar');
     const [form, setForm] = useState<Partial<Post>>({
-        title: '', content: '', image_url: '', category: 'News'
+        title_ar: '', title_en: '', title_tr: '',
+        content_ar: '', content_en: '', content_tr: '',
+        image_url: '', category: 'News'
     });
 
     useEffect(() => {
@@ -51,7 +58,11 @@ const PostsPage = () => {
             body: JSON.stringify(form)
         });
 
-        setForm({ title: '', content: '', image_url: '', category: 'News' });
+        setForm({
+            title_ar: '', title_en: '', title_tr: '',
+            content_ar: '', content_en: '', content_tr: '',
+            image_url: '', category: 'News'
+        });
         setIsEditing(false);
         fetchPosts();
     };
@@ -67,7 +78,7 @@ const PostsPage = () => {
                 <div className="flex justify-between items-center">
                     <div>
                         <h2 className="text-2xl font-bold text-white">News & Posts</h2>
-                        <p className="text-gray-400">Manage homepage articles and updates</p>
+                        <p className="text-gray-400">Manage homepage articles and updates with localization</p>
                     </div>
                 </div>
 
@@ -78,12 +89,43 @@ const PostsPage = () => {
                             {isEditing ? <Edit2 size={18} /> : <Plus size={18} />}
                             {isEditing ? 'Edit Post' : 'New Post'}
                         </h3>
+
+                        {/* Language Tabs */}
+                        <div className="flex gap-2 mb-4 bg-midnight-black p-1 rounded-lg">
+                            {(['ar', 'en', 'tr'] as const).map(lang => (
+                                <button
+                                    key={lang}
+                                    type="button"
+                                    onClick={() => setActiveTab(lang)}
+                                    className={`flex-1 py-1 rounded text-sm font-bold uppercase transition-colors ${activeTab === lang ? 'bg-emerald-600 text-white' : 'text-gray-500 hover:text-white'}`}
+                                >
+                                    {lang}
+                                </button>
+                            ))}
+                        </div>
+
                         <form onSubmit={handleSubmit} className="space-y-4">
+
+                            {/* Dynamic Fields based on Active Tab */}
                             <div>
-                                <label className="text-xs text-gray-400">Title</label>
+                                <label className="text-xs text-gray-400 block mb-1">Title ({activeTab.toUpperCase()})</label>
                                 <input className="input-field w-full bg-midnight-black p-2 rounded border border-gray-700 text-white"
-                                    value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} required />
+                                    value={form[`title_${activeTab}`] || ''}
+                                    onChange={e => setForm({ ...form, [`title_${activeTab}`]: e.target.value })}
+                                    required={activeTab === 'ar'} // Require mostly AR at least
+                                />
                             </div>
+
+                            <div>
+                                <label className="text-xs text-gray-400 block mb-1">Content ({activeTab.toUpperCase()})</label>
+                                <textarea className="input-field w-full bg-midnight-black p-2 rounded border border-gray-700 text-white h-32"
+                                    value={form[`content_${activeTab}`] || ''}
+                                    onChange={e => setForm({ ...form, [`content_${activeTab}`]: e.target.value })}
+                                />
+                            </div>
+
+                            <hr className="border-gray-800 my-4" />
+
                             <div>
                                 <label className="text-xs text-gray-400">Category</label>
                                 <select className="input-field w-full bg-midnight-black p-2 rounded border border-gray-700 text-white"
@@ -91,6 +133,8 @@ const PostsPage = () => {
                                     <option>News</option>
                                     <option>Highlight</option>
                                     <option>Announcement</option>
+                                    <option>Special</option>
+                                    <option>Football</option>
                                 </select>
                             </div>
 
@@ -100,17 +144,12 @@ const PostsPage = () => {
                                 label="Featured Image"
                             />
 
-                            <div>
-                                <label className="text-xs text-gray-400">Content</label>
-                                <textarea className="input-field w-full bg-midnight-black p-2 rounded border border-gray-700 text-white h-32"
-                                    value={form.content} onChange={e => setForm({ ...form, content: e.target.value })} required />
-                            </div>
                             <div className="flex gap-2">
                                 <button className="flex-1 btn-primary py-2 flex justify-center items-center gap-2">
                                     <Save size={16} /> Save
                                 </button>
                                 {isEditing && (
-                                    <button type="button" onClick={() => { setIsEditing(false); setForm({ title: '', content: '', image_url: '', category: 'News' }); }}
+                                    <button type="button" onClick={() => { setIsEditing(false); setForm({ category: 'News' }); }}
                                         className="btn-secondary py-2 px-3">
                                         <X size={16} />
                                     </button>
@@ -132,15 +171,15 @@ const PostsPage = () => {
                                             <span className="text-xs text-emerald-energy bg-emerald-900/20 px-2 py-0.5 rounded border border-emerald-900/50 mb-2 inline-block">
                                                 {post.category}
                                             </span>
-                                            <h4 className="text-lg font-bold text-white">{post.title}</h4>
+                                            <h4 className="text-lg font-bold text-white">{post.title_ar || post.title_en}</h4>
                                         </div>
                                         <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                             <button onClick={() => handleEdit(post)} className="p-2 text-blue-400 hover:bg-blue-900/20 rounded"><Edit2 size={16} /></button>
                                             <button onClick={() => handleDelete(post.id)} className="p-2 text-red-400 hover:bg-red-900/20 rounded"><Trash2 size={16} /></button>
                                         </div>
                                     </div>
-                                    <p className="text-gray-400 text-sm mt-2 line-clamp-2">{post.content}</p>
-                                    <p className="text-gray-600 text-xs mt-2">{new Date(post.created_at).toLocaleDateString()}</p>
+                                    <p className="text-gray-400 text-sm mt-2 line-clamp-2">{post.content_ar || post.content_en}</p>
+                                    <p className="text-gray-600 text-xs mt-2">{new Date(post.created_at).toLocaleDateString()} • {post.title_en ? 'EN' : ''} {post.title_tr ? 'TR' : ''}</p>
                                 </div>
                             </div>
                         ))}

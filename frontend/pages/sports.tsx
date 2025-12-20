@@ -35,8 +35,8 @@ export default function SportsPage() {
       <div className="min-h-screen pt-24 pb-20 container mx-auto px-4">
         <div className="flex flex-col md:flex-row justify-between items-center mb-10 gap-6">
           <div>
-            <h1 className="h1 text-gradient-oasis">Sports Center</h1>
-            <p className="text-gray-400">Browse all live and upcoming sports events</p>
+            <h1 className="h1 text-gradient-oasis">مركز الرياضة</h1>
+            <p className="text-gray-400">تصفح جميع الأحداث الرياضية المباشرة والقادمة</p>
           </div>
 
           <div className="flex gap-2 bg-gray-900 p-1 rounded-lg overflow-x-auto">

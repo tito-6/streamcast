@@ -3,25 +3,25 @@ import { FiPlay, FiTrendingUp } from 'react-icons/fi';
 import { MdLiveTv } from 'react-icons/md';
 
 interface HeroSectionProps {
-  lang: 'ar' | 'en';
+  lang: 'ar' | 'en' | 'tr';
 }
 
 const HeroSection: React.FC<HeroSectionProps> = ({ lang }) => {
   const [data, setData] = useState({
-    title: lang === 'ar' ? 'Sport Events' : 'The Sports Oasis',
-    subtitle: lang === 'ar' ? 'مستقبل البث المباشر' : 'The Future of Sports Live Streaming',
+    title: lang === 'ar' ? 'Sport Events' : lang === 'tr' ? 'Spor Etkinlikleri' : 'The Sports Oasis',
+    subtitle: lang === 'ar' ? 'مستقبل البث المباشر' : lang === 'tr' ? 'Spor Canlı Yayınlarının Geleceği' : 'The Future of Sports Live Streaming',
     image: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800&q=80'
   });
 
   useEffect(() => {
     // Fetch dynamic content from CMS
-    fetch('http://localhost:8080/api/content/active-banner')
+    fetch('/api/content/active-banner')
       .then(res => res.json())
       .then(json => {
         if (json.data && json.data.image_url) {
           setData({
-            title: lang === 'ar' ? json.data.title_ar : json.data.title_en,
-            subtitle: lang === 'ar' ? json.data.subtitle_ar : json.data.subtitle_en,
+            title: lang === 'ar' ? json.data.title_ar : lang === 'tr' ? json.data.title_tr : json.data.title_en,
+            subtitle: lang === 'ar' ? json.data.subtitle_ar : lang === 'tr' ? json.data.subtitle_tr : json.data.subtitle_en,
             image: json.data.image_url
           });
         }
@@ -41,6 +41,12 @@ const HeroSection: React.FC<HeroSectionProps> = ({ lang }) => {
       trending: 'Trending',
       liveNow: 'Live Now',
       viewers: 'viewers',
+    },
+    tr: {
+      watchNow: 'Şimdi İzle',
+      trending: 'Trendler',
+      liveNow: 'Canlı Yayın',
+      viewers: 'izleyici',
     }
   };
 

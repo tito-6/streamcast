@@ -42,8 +42,8 @@ const LiveSportsView: React.FC<LiveSportsViewProps> = ({ category, lang = 'ar' }
     useEffect(() => {
         const fetchStatus = async () => {
             try {
-                // Fetch from Owncast API (using proxy or direct if CORS allowed, assuming proxy for now or localhost)
-                const res = await fetch('http://localhost:8081/api/status');
+                // Fetch from Backend API (using proxy or direct if CORS allowed, assuming proxy for now or localhost)
+                const res = await fetch('http://localhost:8080/api/status');
                 const data = await res.json();
                 setStatus(data);
             } catch (error) {

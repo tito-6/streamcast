@@ -16,56 +16,34 @@ interface ScheduledMatch {
   broadcaster?: string;
 }
 
-export default function SchedulePage() {
-  const [lang, setLang] = useState<'ar' | 'en'>('ar');
-  const [matches, setMatches] = useState<ScheduledMatch[]>([]);
-  const [selectedDate, setSelectedDate] = useState<string>('all');
+import { useLanguage } from '../contexts/LanguageContext';
 
+export default function SchedulePage() {
+  const { language: lang, setLanguage } = useLanguage();
+  const [matches, setMatches] = useState<any[]>([]);
+
+  // Translations...
   const translations = {
-    ar: {
-      title: 'جدول المباريات',
-      subtitle: 'لا تفوت مبارياتك المفضلة',
-      all: 'الكل',
-      venue: 'الملعب',
-      broadcaster: 'القناة الناقلة',
-      vs: 'ضد',
-    },
-    en: {
-      title: 'Match Schedule',
-      subtitle: 'Don\'t miss your favorite matches',
-      all: 'All',
-      venue: 'Venue',
-      broadcaster: 'Broadcaster',
-      vs: 'vs',
-    }
+    ar: { title: 'جدول المباريات', subtitle: 'لا تفوت مبارياتك المفضلة', vs: 'ضد', remind: 'تذكير' },
+    en: { title: 'Match Schedule', subtitle: 'Don\'t miss your favorite matches', vs: 'vs', remind: 'Remind Me' },
+    tr: { title: 'Maç Programı', subtitle: 'Favori maçlarınızı kaçırmayın', vs: 'vs', remind: 'Hatırlat' }
   };
-  const t = translations[lang];
+  // @ts-ignore
+  const t = translations[lang] || translations['ar'];
 
   useEffect(() => {
     fetch('http://localhost:8080/api/events')
       .then(res => res.json())
       .then(json => {
         if (json.data) {
-          // Transform backend event format to frontend format
-          const events = json.data.map((e: any) => ({
-            id: e.id,
-            title: e.title || `${e.team_home} vs ${e.team_away}`,
-            sport: e.sport,
-            league: e.league || 'Tournament',
-            date: e.start_time, // Keep ISO for parsing
-            time: new Date(e.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            venue: e.venue,
-            teams: { home: e.team_home, away: e.team_away },
-            broadcaster: e.broadcaster || 'StreamCast'
-          }));
-          setMatches(events);
+          setMatches(json.data);
         }
       })
       .catch(err => console.error(err));
   }, []);
 
   const getSportIcon = (sport: string) => {
-    switch (sport.toLowerCase()) {
+    switch (sport?.toLowerCase()) {
       case 'basketball': return GiBasketballBall;
       case 'tennis': return GiTennisRacket;
       default: return GiSoccerBall;
@@ -90,16 +68,37 @@ export default function SchedulePage() {
               <div className="text-center text-gray-500 py-10">No upcoming matches scheduled. Check back later!</div>
             ) : matches.map((match) => {
               const SportIcon = getSportIcon(match.sport);
+
+              // Resolve Localized Content
+              // @ts-ignore
+              const title = match[`title_${lang}`] || match[`title_en`] || match.title;
+              // @ts-ignore
+              const teamHome = match[`team_home_${lang}`] || match.team_home_en || match.team_home;
+              // @ts-ignore
+              const teamAway = match[`team_away_${lang}`] || match.team_away_en || match.team_away;
+              // @ts-ignore
+              const league = match[`league_${lang}`] || match.league_en || match.league;
+
+              const displayTitle = (teamHome && teamAway) ?
+                <><span>{teamHome}</span> <span className="text-emerald-energy mx-2">{t.vs}</span> <span>{teamAway}</span></>
+                : title;
+
               return (
                 <div key={match.id} className="glass-panel p-6 rounded-xl hover:border-emerald-energy transition-all">
                   <div className="flex flex-col lg:flex-row gap-6">
 
                     <div className="lg:w-1/3">
                       <div className="relative aspect-video rounded-lg overflow-hidden bg-cosmic-navy flex items-center justify-center">
-                        <SportIcon className="text-6xl text-emerald-energy/20" />
-                        <div className="absolute top-3 left-3 w-12 h-12 rounded-full bg-emerald-energy/20 backdrop-blur-sm flex items-center justify-center border-2 border-emerald-energy">
-                          <SportIcon className="text-2xl text-emerald-energy" />
-                        </div>
+                        {match.thumbnail ? (
+                          <img src={match.thumbnail} alt={title} className="w-full h-full object-cover" />
+                        ) : (
+                          <>
+                            <SportIcon className="text-6xl text-emerald-energy/20" />
+                            <div className="absolute top-3 left-3 w-12 h-12 rounded-full bg-emerald-energy/20 backdrop-blur-sm flex items-center justify-center border-2 border-emerald-energy">
+                              <SportIcon className="text-2xl text-emerald-energy" />
+                            </div>
+                          </>
+                        )}
                       </div>
                     </div>
 
@@ -107,29 +106,31 @@ export default function SchedulePage() {
                       <div>
                         {/* League & Date */}
                         <div className="flex flex-wrap items-center gap-4 mb-3">
-                          <span className="px-3 py-1 bg-cosmic-navy rounded-full text-emerald-energy text-sm font-semibold">
-                            {match.league}
-                          </span>
+                          {league && (
+                            <span className="px-3 py-1 bg-cosmic-navy rounded-full text-emerald-energy text-sm font-semibold">
+                              {league}
+                            </span>
+                          )}
                           <div className="flex items-center gap-2 text-white/70">
                             <FiCalendar />
-                            <span>{new Date(match.date).toLocaleDateString()}</span>
+                            <span>{new Date(match.start_time).toLocaleDateString()}</span>
                           </div>
                           <div className="flex items-center gap-2 text-white/70">
                             <FiClock />
-                            <span>{new Date(match.date).toLocaleTimeString()}</span>
+                            <span>{new Date(match.start_time).toLocaleTimeString()}</span>
                           </div>
                         </div>
 
                         {/* Match Title / Teams */}
                         <h3 className="text-2xl font-bold text-white mb-4">
-                          {match.teams.home} <span className="text-emerald-energy">{t.vs}</span> {match.teams.away}
+                          {displayTitle}
                         </h3>
 
                         {/* Additional Info */}
                         <div className="space-y-2 mb-4">
                           <div className="flex items-center gap-2 text-white/70">
                             <FiMapPin className="text-emerald-energy" />
-                            <span>{match.venue}</span>
+                            <span>{match.venue || 'TBA'}</span>
                           </div>
                         </div>
                       </div>
@@ -137,7 +138,7 @@ export default function SchedulePage() {
                       <div className="flex gap-3 mt-4">
                         <button className="flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-semibold bg-emerald-energy text-midnight-black hover:bg-emerald-400 transition-colors">
                           <MdNotificationsActive className="text-xl" />
-                          Remind Me
+                          {t.remind}
                         </button>
                       </div>
                     </div>
