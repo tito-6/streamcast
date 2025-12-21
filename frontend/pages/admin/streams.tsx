@@ -27,7 +27,7 @@ const Streams = () => {
 
     const fetchStreams = async () => {
         try {
-            const res = await fetch('http://localhost:8080/api/streams');
+            const res = await fetch('/api/streams');
             const data = await res.json();
             if (data.data) setStreams(data.data);
         } catch (err) { console.error(err); }
@@ -36,7 +36,7 @@ const Streams = () => {
     const createStream = async () => {
         const newStream = { title: "New Championship Event " + (streams.length + 1), sport_category: "Football" };
         try {
-            const res = await fetch('http://localhost:8080/api/streams', {
+            const res = await fetch('/api/streams', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(newStream),
@@ -49,7 +49,7 @@ const Streams = () => {
     const deleteStream = async (id: number) => {
         if (!window.confirm("Are you sure?")) return;
         try {
-            await fetch(`http://localhost:8080/api/streams/${id}`, { method: 'DELETE' });
+            await fetch(`/api/streams/${id}`, { method: 'DELETE' });
             setStreams(streams.filter(s => s.id !== id));
         } catch (err) { console.error(err); }
     };
@@ -58,7 +58,7 @@ const Streams = () => {
         e.preventDefault();
         if (!editingStream) return;
         try {
-            const res = await fetch(`http://localhost:8080/api/streams/${editingStream.id}`, {
+            const res = await fetch(`/api/streams/${editingStream.id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(editingStream),
@@ -107,9 +107,9 @@ const Streams = () => {
                             <div className="bg-black/50 border border-gray-700 rounded-lg px-4 py-2 flex items-center justify-between min-w-[250px]">
                                 <div>
                                     <span className="text-xs text-gray-500 block uppercase">Server (RTMP URL)</span>
-                                    <code className="text-emerald-400 font-mono">rtmp://localhost:1935/live</code>
+                                    <code className="text-emerald-400 font-mono">rtmp://72.62.91.240:1935/live</code>
                                 </div>
-                                <button onClick={() => copyToClipboard("rtmp://localhost:1935/live")} className="text-gray-400 hover:text-white p-2">
+                                <button onClick={() => copyToClipboard("rtmp://72.62.91.240:1935/live")} className="text-gray-400 hover:text-white p-2">
                                     <Copy size={16} />
                                 </button>
                             </div>
@@ -228,5 +228,3 @@ const Streams = () => {
 };
 
 export default Streams;
-
-

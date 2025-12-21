@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { FiPlay, FiTrendingUp } from 'react-icons/fi';
+import Link from 'next/link';
+import { MdPlayArrow, MdPeople } from 'react-icons/md';
 import { MdLiveTv } from 'react-icons/md';
 
 interface HeroSectionProps {
@@ -81,12 +82,12 @@ const HeroSection: React.FC<HeroSectionProps> = ({ lang }) => {
             </h2>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-end pt-4">
-              <button className="btn-primary flex items-center justify-center gap-2 group">
-                <FiPlay className="group-hover:scale-110 transition-transform" />
+              <Link href="/live" className="btn-primary flex items-center justify-center gap-2 group">
+                <MdPlayArrow className="group-hover:scale-110 transition-transform" />
                 {t.watchNow}
-              </button>
+              </Link>
               <button className="btn-secondary flex items-center justify-center gap-2 group">
-                <FiTrendingUp className="group-hover:scale-110 transition-transform" />
+                <MdPeople className="group-hover:scale-110 transition-transform" />
                 {t.trending}
               </button>
             </div>
@@ -105,7 +106,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ lang }) => {
                 <div className="absolute inset-0 bg-gradient-to-t from-midnight-black/80 to-transparent" />
                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                   <div className="w-20 h-20 rounded-full bg-emerald-energy/20 backdrop-blur-sm flex items-center justify-center glow-emerald">
-                    <FiPlay className="text-4xl text-emerald-energy translate-x-1" />
+                    <MdPlayArrow className="text-4xl text-emerald-energy translate-x-1" />
                   </div>
                 </div>
               </div>

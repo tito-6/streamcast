@@ -3,8 +3,9 @@ import Layout from '../../components/Layout';
 import Link from 'next/link';
 import { MdArticle, MdAccessTime } from 'react-icons/md';
 import { format } from 'date-fns';
-import { ar } from 'date-fns/locale';
+import { ar, enUS, tr } from 'date-fns/locale';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { translations } from '../../utils/translations';
 
 interface Post {
     id: number;
@@ -23,6 +24,17 @@ const ArticlesPage = () => {
     const [posts, setPosts] = useState<Post[]>([]);
     const [loading, setLoading] = useState(true);
     const { language } = useLanguage();
+    const t = translations[language];
+
+    // Helper for safe image URL
+    const getImageUrl = (url: string) => {
+        if (!url) return null;
+        if (url.startsWith('http') && !url.includes('localhost')) return url;
+        if (url.includes('localhost')) {
+            return url.replace('http://localhost:8080/uploads', '/uploads');
+        }
+        return `/uploads/${url}`; // Fallback if just filename
+    };
 
     useEffect(() => {
         fetch('/api/posts')
@@ -35,21 +47,21 @@ const ArticlesPage = () => {
     }, []);
 
     return (
-        <Layout title="المقالات والأخبار | Sport Events" description="تابع آخر أخبار الرياضة والمقالات الحصرية">
+        <Layout title={`${t.lastNews} | Sport Events`} description="تابع آخر أخبار الرياضة والمقالات الحصرية" lang={language}>
             <div className="pt-24 pb-20 bg-black min-h-screen">
                 <div className="container mx-auto px-4">
                     <div className="flex items-center gap-3 mb-10">
                         <MdArticle className="text-4xl text-emerald-500" />
                         <h1 className="text-3xl md:text-4xl font-bold text-white">
-                            {language === 'ar' ? 'المقالات والأخبار' : language === 'tr' ? 'Makaleler ve Haberler' : 'Articles & News'}
+                            {t.lastNews}
                         </h1>
                     </div>
 
                     {loading ? (
-                        <div className="text-white text-center py-20">{language === 'ar' ? 'جاري التحميل...' : 'Loading...'}</div>
+                        <div className="text-white text-center py-20">{t.loading}</div>
                     ) : posts.length === 0 ? (
                         <div className="text-gray-400 text-center py-20 bg-midnight-black rounded-xl border border-gray-800">
-                            {language === 'ar' ? 'لا توجد مقالات حالياً.' : 'No articles found.'}
+                            {t.noArticles}
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -62,7 +74,7 @@ const ArticlesPage = () => {
                                             <div className="relative aspect-video overflow-hidden">
                                                 {post.image_url ? (
                                                     <img
-                                                        src={post.image_url}
+                                                        src={getImageUrl(post.image_url) || ''}
                                                         alt={title}
                                                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                                                     />
@@ -78,7 +90,9 @@ const ArticlesPage = () => {
                                             <div className="p-6 flex-1 flex flex-col">
                                                 <div className="text-gray-400 text-xs mb-3 flex items-center gap-1">
                                                     <MdAccessTime />
-                                                    {format(new Date(post.created_at), 'PPP')}
+                                                    {format(new Date(post.created_at), 'PPP', {
+                                                        locale: language === 'ar' ? ar : language === 'tr' ? tr : enUS
+                                                    })}
                                                 </div>
                                                 <h3 className="text-xl font-bold text-white mb-3 line-clamp-2 group-hover:text-emerald-400 transition-colors">
                                                     {title}
@@ -88,7 +102,7 @@ const ArticlesPage = () => {
                                                 </p>
                                                 <div className="mt-auto pt-4 border-t border-gray-800">
                                                     <span className="w-full btn-primary py-2 flex items-center justify-center gap-2 text-sm font-bold group-hover:bg-emerald-600 transition-colors">
-                                                        {language === 'ar' ? 'اقرأ المزيد' : 'Read More'} &larr;
+                                                        {t.readMore} &larr;
                                                     </span>
                                                 </div>
                                             </div>

@@ -1,65 +1,50 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { FiHome, FiTrendingUp, FiUser, FiSearch, FiMenu, FiX, FiGlobe } from 'react-icons/fi';
+import { FiHome, FiTrendingUp, FiUser, FiSearch, FiMenu, FiX, FiGlobe, FiChevronDown } from 'react-icons/fi';
 import { BiJoystick, BiFootball } from 'react-icons/bi';
 import { MdLiveTv, MdArticle } from 'react-icons/md';
 import { useLanguage } from '../contexts/LanguageContext';
+import { translations, Language } from '../utils/translations';
 
 interface NavbarProps {
-  lang?: 'ar' | 'en' | 'tr'; // Deprecated prop, kept for compatibility if needed
+  lang?: Language;
 }
 
 const Navbar: React.FC<NavbarProps> = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isLangOpen, setIsLangOpen] = useState(false);
+  const langMenuRef = useRef<HTMLDivElement>(null);
 
   const { language: currentLang, setLanguage } = useLanguage();
-
-  // translations
-  const translations = {
-    ar: {
-      home: 'الرئيسية',
-      live: 'مباشر',
-      sports: 'الرياضات',
-      articles: 'المقالات',
-      schedule: 'الجدول',
-      archive: 'الأرشيف',
-      profile: 'حسابي',
-      search: 'بحث...',
-      logo: 'Sport Events'
-    },
-    en: {
-      home: 'Home',
-      live: 'Live',
-      sports: 'Sports',
-      articles: 'News',
-      schedule: 'Schedule',
-      archive: 'Archive',
-      profile: 'Profile',
-      search: 'Search...',
-      logo: 'Sport Events'
-    },
-    tr: {
-      home: 'Ana Sayfa',
-      live: 'Canlı',
-      sports: 'Sporlar',
-      articles: 'Haberler',
-      schedule: 'Takvim',
-      archive: 'Arşiv',
-      profile: 'Profil',
-      search: 'Ara...',
-      logo: 'Spor Etkinlikleri'
-    }
-  };
-
   const t = translations[currentLang];
   const isRTL = currentLang === 'ar';
 
-  const toggleLang = () => {
-    // Simple toggle for demo: AR -> EN -> TR -> AR
-    if (currentLang === 'ar') setLanguage('en');
-    else if (currentLang === 'en') setLanguage('tr');
-    else setLanguage('ar');
+  // IDK if I need to handle click outside, but valid for dropdown
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (langMenuRef.current && !langMenuRef.current.contains(event.target as Node)) {
+        setIsLangOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [langMenuRef]);
+
+  const toggleLang = (lang: Language) => {
+    setLanguage(lang);
+    setIsLangOpen(false);
+  };
+
+  const getFlag = (lang: Language) => {
+    switch (lang) {
+      case 'ar': return '🇦🇪';
+      case 'en': return '🇺🇸';
+      case 'tr': return '🇹🇷';
+      default: return '🏳️';
+    }
   };
 
   return (
@@ -121,10 +106,34 @@ const Navbar: React.FC<NavbarProps> = () => {
               <FiSearch className={`absolute top-1/2 -translate-y-1/2 text-gray-400 ${isRTL ? 'left-3' : 'left-3'}`} />
             </div>
 
-            {/* Lang Toggle */}
-            <button onClick={toggleLang} className="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-emerald-400 font-bold text-sm border border-white/5 transition-colors">
-              {currentLang.toUpperCase()}
-            </button>
+            {/* Lang Dropdown */}
+            <div className="relative" ref={langMenuRef}>
+              <button
+                onClick={() => setIsLangOpen(!isLangOpen)}
+                className="h-10 px-3 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center gap-2 text-white font-medium text-sm border border-white/5 transition-colors"
+              >
+                <span className="text-lg">{getFlag(currentLang)}</span>
+                <span className="uppercase">{currentLang}</span>
+                <FiChevronDown className={`transition-transform ${isLangOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {isLangOpen && (
+                <div className="absolute top-full mt-2 w-32 bg-midnight-black border border-gray-800 rounded-xl shadow-xl overflow-hidden animate-slide-up z-50 ltr:right-0 rtl:left-0">
+                  <button onClick={() => toggleLang('ar')} className="w-full px-4 py-3 flex items-center gap-3 hover:bg-white/5 text-left transition-colors text-white">
+                    <span className="text-lg">🇦🇪</span>
+                    <span>العربية</span>
+                  </button>
+                  <button onClick={() => toggleLang('en')} className="w-full px-4 py-3 flex items-center gap-3 hover:bg-white/5 text-left transition-colors text-white">
+                    <span className="text-lg">🇺🇸</span>
+                    <span>English</span>
+                  </button>
+                  <button onClick={() => toggleLang('tr')} className="w-full px-4 py-3 flex items-center gap-3 hover:bg-white/5 text-left transition-colors text-white">
+                    <span className="text-lg">🇹🇷</span>
+                    <span>Türkçe</span>
+                  </button>
+                </div>
+              )}
+            </div>
 
             {/* Profile */}
             <Link href="/profile" className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-600 to-teal-800 flex items-center justify-center text-white shadow-lg hover:shadow-emerald-500/20 transition-all">
@@ -162,10 +171,22 @@ const Navbar: React.FC<NavbarProps> = () => {
             <Link href="/archive" className="mobile-link">
               <MdLiveTv /> {t.archive}
             </Link>
+
             <div className="border-t border-white/10 pt-2 mt-2">
-              <button onClick={toggleLang} className="mobile-link w-full justify-start text-emerald-400">
-                <FiGlobe /> Language: {currentLang.toUpperCase()}
-              </button>
+              <div className="flex gap-2 px-2">
+                <button onClick={() => toggleLang('ar')} className={`flex-1 py-2 rounded-lg flex flex-col items-center justify-center gap-1 border ${currentLang === 'ar' ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400' : 'bg-white/5 border-transparent text-gray-400'}`}>
+                  <span className="text-xl">🇦🇪</span>
+                  <span className="text-xs">AR</span>
+                </button>
+                <button onClick={() => toggleLang('en')} className={`flex-1 py-2 rounded-lg flex flex-col items-center justify-center gap-1 border ${currentLang === 'en' ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400' : 'bg-white/5 border-transparent text-gray-400'}`}>
+                  <span className="text-xl">🇺🇸</span>
+                  <span className="text-xs">EN</span>
+                </button>
+                <button onClick={() => toggleLang('tr')} className={`flex-1 py-2 rounded-lg flex flex-col items-center justify-center gap-1 border ${currentLang === 'tr' ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400' : 'bg-white/5 border-transparent text-gray-400'}`}>
+                  <span className="text-xl">🇹🇷</span>
+                  <span className="text-xs">TR</span>
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -205,6 +226,13 @@ const Navbar: React.FC<NavbarProps> = () => {
         }
         .animate-slide-down {
             animation: slide-down 0.2s ease-out;
+        }
+        @keyframes slide-up {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-slide-up {
+            animation: slide-up 0.2s ease-out;
         }
       `}</style>
     </nav>

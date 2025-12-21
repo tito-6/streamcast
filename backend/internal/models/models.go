@@ -75,6 +75,17 @@ type HeroBanner struct {
 	UpdatedAt  time.Time `json:"updated_at"`
 }
 
+type Archive struct {
+	ID        uint           `gorm:"primaryKey" json:"id"`
+	Title     string         `json:"title"`
+	FilePath  string         `json:"file_path"`
+	Duration  string         `json:"duration"`
+	Thumbnail string         `json:"thumbnail"`
+	FileSize  int64          `json:"file_size"`
+	CreatedAt time.Time      `json:"created_at"`
+	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
+}
+
 type Post struct {
 	ID         uint      `gorm:"primaryKey" json:"id"`
 	TitleAr    string    `json:"title_ar"`

@@ -51,24 +51,12 @@ func UpdateStream(c *gin.Context) {
 
 	// Dynamic update of all allowed fields
 	stream.Title = input.Title
-	if input.Description != "" {
-		stream.Description = input.Description
-	}
-	if input.SportCategory != "" {
-		stream.SportCategory = input.SportCategory
-	}
-	if input.BannerURL != "" {
-		stream.BannerURL = input.BannerURL
-	}
-	if input.ThumbnailURL != "" {
-		stream.ThumbnailURL = input.ThumbnailURL
-	}
-	if input.PreMatchDetails != "" {
-		stream.PreMatchDetails = input.PreMatchDetails
-	}
-	if input.PostMatchDetails != "" {
-		stream.PostMatchDetails = input.PostMatchDetails
-	}
+	stream.Description = input.Description
+	stream.SportCategory = input.SportCategory
+	stream.BannerURL = input.BannerURL
+	stream.ThumbnailURL = input.ThumbnailURL
+	stream.PreMatchDetails = input.PreMatchDetails
+	stream.PostMatchDetails = input.PostMatchDetails
 
 	// Explicitly set IsLive as it's boolean
 	stream.IsLive = input.IsLive
@@ -104,10 +92,10 @@ func StopStream(c *gin.Context) {
 	stream.IsLive = false
 	stream.IngestStatus = "stopped"
 	stream.UpdatedAt = models.DB.NowFunc()
-    
-    // In a real app with joy4/avutil, we would also find the active connection in a map and close it.
-    // For now, updating the DB will trigger the frontend to stop playback.
-    
+
+	// In a real app with joy4/avutil, we would also find the active connection in a map and close it.
+	// For now, updating the DB will trigger the frontend to stop playback.
+
 	models.DB.Save(&stream)
 	c.JSON(http.StatusOK, gin.H{"data": stream, "message": "Stream stopped successfully"})
 }

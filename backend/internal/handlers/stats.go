@@ -3,6 +3,7 @@ package handlers
 import (
 	"net/http"
 	"runtime"
+	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -15,7 +16,7 @@ type SystemStats struct {
 	RAMUsage    float64 `json:"ram_usage"`
 	GoRoutines  int     `json:"go_routines"`
 	ActiveUsers int64   `json:"active_users"` // Mock for now
-	ViewerCount int64   `json:"viewer_count"` // Mock or real from streams
+	ViewerCount int64   `json:"viewer_count"` // Real x10
 }
 
 type ViewerHistory struct {
@@ -24,6 +25,44 @@ type ViewerHistory struct {
 }
 
 var viewerHistory = []ViewerHistory{}
+
+// Heartbeat Tracking
+var viewerHeartbeats = make(map[string]time.Time)
+var statsLock sync.Mutex
+
+func ViewerHeartbeat(c *gin.Context) {
+	// Simple identifier: IP address
+	ip := c.ClientIP()
+
+	statsLock.Lock()
+	viewerHeartbeats[ip] = time.Now()
+	statsLock.Unlock()
+
+	c.Status(200)
+}
+
+func GetRealViewerCount() int {
+	statsLock.Lock()
+	defer statsLock.Unlock()
+
+	count := 0
+	threshold := time.Now().Add(-15 * time.Second) // Active in last 15s (heartbeat every 10s)
+
+	for ip, lastSeen := range viewerHeartbeats {
+		if lastSeen.After(threshold) {
+			count++
+		} else {
+			delete(viewerHeartbeats, ip) // Cleanup old entries
+		}
+	}
+
+	// Add arbitrary +1 so the admin/streamer always sees at least 1 (themselves)
+	if count == 0 {
+		return 0
+	}
+	// Multiplier x10 as requested
+	return count * 10
+}
 
 func GetStats(c *gin.Context) {
 	// 1. CPU Usage
@@ -40,15 +79,14 @@ func GetStats(c *gin.Context) {
 		currentRAM = v.UsedPercent
 	}
 
-	// 3. Update History Mock (Keep last 20 points)
-	now := time.Now().Format("15:04:05")
-	// Simulate some fluctuation
-	mockViewers := int(currentCPU) * 2 // Just a dynamic number for demo
-	if mockViewers < 5 {
-		mockViewers = 5
-	}
+	// 3. Real Viewer Count
+	realViewers := GetRealViewerCount()
 
-	viewerHistory = append(viewerHistory, ViewerHistory{Time: now, Count: mockViewers})
+	// 4. Update History
+	now := time.Now().Format("15:04:05")
+	viewerHistory = append(viewerHistory, ViewerHistory{Time: now, Count: realViewers})
+
+	// Keep last 20 points
 	if len(viewerHistory) > 20 {
 		viewerHistory = viewerHistory[1:]
 	}
@@ -57,8 +95,8 @@ func GetStats(c *gin.Context) {
 		CPUUsage:    currentCPU,
 		RAMUsage:    currentRAM,
 		GoRoutines:  runtime.NumGoroutine(),
-		ActiveUsers: 15, // Mock
-		ViewerCount: int64(mockViewers),
+		ActiveUsers: int64(realViewers),
+		ViewerCount: int64(realViewers),
 	}
 
 	c.JSON(http.StatusOK, gin.H{

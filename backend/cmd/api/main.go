@@ -48,6 +48,7 @@ func main() {
 
 	// Static Files
 	r.Static("/uploads", "./uploads")
+	r.Static("/api/uploads", "./uploads")
 
 	// Live Stream (HTTP-FLV)
 	r.GET("/live.flv", func(c *gin.Context) {
@@ -59,6 +60,10 @@ func main() {
 		api.POST("/login", handlers.Login)
 		api.POST("/seed", handlers.Seed)
 		api.POST("/upload", handlers.UploadFile)
+
+		// Archives
+		api.GET("/archives", handlers.GetArchives)
+		api.DELETE("/archives/:id", handlers.DeleteArchive)
 
 		// Streams
 		api.GET("/streams", handlers.GetStreams)
@@ -73,6 +78,7 @@ func main() {
 
 		// Analytics
 		api.GET("/stats", handlers.GetStats)
+		api.POST("/heartbeat", handlers.ViewerHeartbeat)
 
 		// CMS - Users
 		api.GET("/users", handlers.GetUsers)
