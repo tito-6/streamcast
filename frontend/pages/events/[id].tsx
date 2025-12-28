@@ -41,7 +41,7 @@ const EventDetailsPage = ({ event }: { event: Event }) => {
                 <div className="absolute top-0 left-0 w-full h-[50vh] overflow-hidden z-0">
                     {event.thumbnail ? (
                         <Image
-                            src={event.thumbnail.startsWith('http') ? event.thumbnail : `http://localhost:8080/${event.thumbnail}`}
+                            src={event.thumbnail && event.thumbnail.startsWith('data:') ? event.thumbnail : (event.thumbnail?.startsWith('http') ? event.thumbnail : `/uploads/${event.thumbnail}`)}
                             alt="Background"
                             fill
                             className="object-cover opacity-20 blur-xl"
@@ -102,7 +102,7 @@ const EventDetailsPage = ({ event }: { event: Event }) => {
                                     <div className="relative aspect-video rounded-xl overflow-hidden border border-gray-700 shadow-lg">
                                         {event.thumbnail ? (
                                             <Image
-                                                src={event.thumbnail.startsWith('http') ? event.thumbnail : `http://localhost:8080/${event.thumbnail}`}
+                                                src={event.thumbnail && event.thumbnail.startsWith('data:') ? event.thumbnail : (event.thumbnail?.startsWith('http') ? event.thumbnail : `/uploads/${event.thumbnail}`)}
                                                 alt="Thumbnail"
                                                 fill
                                                 className="object-cover"

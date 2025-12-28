@@ -32,7 +32,7 @@ const PostsPage = () => {
 
     const fetchPosts = async () => {
         try {
-            const res = await fetch('http://localhost:8080/api/posts');
+            const res = await fetch('/api/posts');
             const data = await res.json();
             if (data.data) setPosts(data.data);
         } catch (err) { console.error(err); }
@@ -40,15 +40,15 @@ const PostsPage = () => {
 
     const handleDelete = async (id: number) => {
         if (!confirm("Delete post?")) return;
-        await fetch(`http://localhost:8080/api/posts/${id}`, { method: 'DELETE' });
+        await fetch(`/api/posts/${id}`, { method: 'DELETE' });
         setPosts(posts.filter(p => p.id !== id));
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         const url = isEditing && form.id
-            ? `http://localhost:8080/api/posts/${form.id}`
-            : 'http://localhost:8080/api/posts';
+            ? `/api/posts/${form.id}`
+            : '/api/posts';
 
         const method = isEditing && form.id ? 'PUT' : 'POST';
 

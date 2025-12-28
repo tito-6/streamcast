@@ -5,7 +5,13 @@ const nextConfig = {
     appDir: false, // Use pages directory
   },
   images: {
-    domains: ['cdn.mock', 'localhost', 'assets.kooora.com', 'images.unsplash.com'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**',
+      },
+    ],
+    domains: ['cdn.mock', 'localhost', 'assets.kooora.com', 'images.unsplash.com', 'aawsat.com'],
   },
 }
 

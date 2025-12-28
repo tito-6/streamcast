@@ -19,7 +19,7 @@ const UsersPage = () => {
 
     const fetchUsers = async () => {
         try {
-            const res = await fetch('http://localhost:8080/api/users');
+            const res = await fetch('/api/users');
             const data = await res.json();
             if (data.data) setUsers(data.data);
         } catch (err) {
@@ -29,7 +29,7 @@ const UsersPage = () => {
 
     const toggleBan = async (id: number) => {
         try {
-            const res = await fetch(`http://localhost:8080/api/users/${id}/ban`, { method: 'POST' });
+            const res = await fetch(`/api/users/${id}/ban`, { method: 'POST' });
             if (res.ok) {
                 setUsers(users.map(u => u.id === id ? { ...u, is_banned: !u.is_banned } : u));
             }
@@ -89,8 +89,8 @@ const UsersPage = () => {
                                         <button
                                             onClick={() => toggleBan(user.id)}
                                             className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${user.is_banned
-                                                    ? 'bg-emerald-900/30 text-emerald-400 hover:bg-emerald-900/50'
-                                                    : 'bg-red-900/30 text-red-400 hover:bg-red-900/50'
+                                                ? 'bg-emerald-900/30 text-emerald-400 hover:bg-emerald-900/50'
+                                                : 'bg-red-900/30 text-red-400 hover:bg-red-900/50'
                                                 }`}
                                         >
                                             {user.is_banned ? 'Unban User' : 'Ban Access'}

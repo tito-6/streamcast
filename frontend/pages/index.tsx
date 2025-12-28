@@ -54,6 +54,7 @@ export default function HomePage() {
 
   const getImageUrl = (url: string) => {
     if (!url) return null;
+    if (url.startsWith('data:')) return url;
     if (url.startsWith('http') && !url.includes('localhost')) return url;
     if (url.includes('localhost')) {
       return url.replace('http://localhost:8080/uploads', '/uploads');

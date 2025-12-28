@@ -28,7 +28,7 @@ const ContentPage = () => {
 
     const fetchBanners = async () => {
         try {
-            const res = await fetch('http://localhost:8080/api/content/banners');
+            const res = await fetch('/api/content/banners');
             const data = await res.json();
             if (data.data) setBanners(data.data);
         } catch (err) { console.error(err); }
@@ -51,7 +51,7 @@ const ContentPage = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const res = await fetch('http://localhost:8080/api/content/banners', {
+            const res = await fetch('/api/content/banners', {
                 method: 'POST', // Backend handles update if ID exists
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(form)

@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://sportevent.online/sitemap.xml

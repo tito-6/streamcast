@@ -31,7 +31,7 @@ const EventsPage = () => {
 
     const fetchEvents = async () => {
         try {
-            const res = await fetch('http://localhost:8080/api/events');
+            const res = await fetch('/api/events');
             const data = await res.json();
             if (data.data) setEvents(data.data);
         } catch (err) { console.error(err); }
@@ -39,15 +39,15 @@ const EventsPage = () => {
 
     const handleDelete = async (id: number) => {
         if (!confirm("Delete this event?")) return;
-        await fetch(`http://localhost:8080/api/events/${id}`, { method: 'DELETE' });
+        await fetch(`/api/events/${id}`, { method: 'DELETE' });
         setEvents(events.filter(e => e.id !== id));
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         const url = isEditing && form.id
-            ? `http://localhost:8080/api/events/${form.id}`
-            : 'http://localhost:8080/api/events';
+            ? `/api/events/${form.id}`
+            : '/api/events';
 
         const method = isEditing && form.id ? 'PUT' : 'POST';
 
