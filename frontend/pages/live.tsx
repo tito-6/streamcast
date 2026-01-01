@@ -257,10 +257,22 @@ const LivePage = () => {
   };
 
   const handleFullscreen = async () => {
+    // iOS Safari Handling
+    if (videoRef.current && (videoRef.current as any).webkitEnterFullscreen) {
+      (videoRef.current as any).webkitEnterFullscreen();
+      return;
+    }
+
+    // Standard Fullscreen API
     if (!containerRef.current) return;
     if (!document.fullscreenElement) {
       try {
-        await containerRef.current.requestFullscreen();
+        if (containerRef.current.requestFullscreen) {
+          await containerRef.current.requestFullscreen();
+        } else if ((containerRef.current as any).webkitRequestFullscreen) {
+          (containerRef.current as any).webkitRequestFullscreen(); // Older Chromium/Android
+        }
+
         // @ts-ignore
         if (screen.orientation && screen.orientation.lock) {
           // @ts-ignore
@@ -270,7 +282,11 @@ const LivePage = () => {
         console.error(`Error attempting to enable fullscreen: ${err.message}`);
       }
     } else {
-      document.exitFullscreen();
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if ((document as any).webkitExitFullscreen) {
+        (document as any).webkitExitFullscreen();
+      }
     }
   };
 
@@ -294,6 +310,7 @@ const LivePage = () => {
 
             <video
               ref={videoRef}
+              className="w-full h-full object-contain"
               playsInline
               onTimeUpdate={() => {
                 if (videoRef.current) {
