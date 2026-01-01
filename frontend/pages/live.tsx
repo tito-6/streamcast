@@ -341,7 +341,21 @@ const LivePage = () => {
                     <button onClick={(e) => { e.stopPropagation(); toggleMute(); }} className="text-white hover:text-emerald-500">
                       {isMuted ? <MdVolumeOff size={24} className="text-red-500" /> : <MdVolumeUp size={24} />}
                     </button>
-                    {/* Volume slider could go here */}
+                    <input
+                      type="range"
+                      min="0"
+                      max="1"
+                      step="0.05"
+                      value={isMuted ? 0 : volume}
+                      onChange={(e) => {
+                        const val = parseFloat(e.target.value);
+                        setVolume(val);
+                        if (videoRef.current) videoRef.current.volume = val;
+                        setIsMuted(val === 0);
+                      }}
+                      className="w-20 h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer accent-white hover:accent-emerald-500 transition-all"
+                      onClick={(e) => e.stopPropagation()}
+                    />
                   </div>
 
                   {stream.is_live && (
@@ -414,11 +428,9 @@ const LivePage = () => {
               </div>
             )}
 
-            {/* Top Left Overlay Info */}
+            {/* Top Left Overlay Info (Viewer Count Removed) */}
             <div className="absolute top-4 left-4 z-20 flex gap-2 pointer-events-none">
-              <span className="bg-black/50 backdrop-blur text-white px-3 py-1 rounded text-sm flex items-center gap-2">
-                <MdPeople className="text-emerald-500" /> {stream.viewer_count.toLocaleString()}
-              </span>
+              {/* Removed as per request */}
             </div>
 
           </div>
