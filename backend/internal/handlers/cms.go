@@ -66,6 +66,12 @@ func UpdateBanner(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"data": input})
 }
 
+func DeleteBanner(c *gin.Context) {
+	id := c.Param("id")
+	models.DB.Delete(&models.HeroBanner{}, id)
+	c.JSON(http.StatusOK, gin.H{"data": true})
+}
+
 // -- EVENTS --
 
 func GetEvents(c *gin.Context) {

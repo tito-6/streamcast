@@ -3,6 +3,8 @@ import { Calendar, Plus, Trash2, Edit2, Save, X, Clock, Shield } from 'lucide-re
 import AdminLayout from '../../components/AdminLayout';
 
 import ImageUpload from '../../components/ImageUpload';
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 interface Event {
     id: number;
@@ -153,11 +155,68 @@ const EventsPage = () => {
                                 label="Event Thumbnail / Logo"
                             />
 
-                            <div>
-                                <label className="text-xs text-gray-400">Start Time</label>
-                                <input type="datetime-local" className="input-field w-full bg-midnight-black p-2 rounded border border-gray-700 text-white"
-                                    value={form.start_time ? new Date(form.start_time).toISOString().slice(0, 16) : ''}
-                                    onChange={e => setForm({ ...form, start_time: new Date(e.target.value).toISOString() })} required />
+                            <div className="bg-white/5 p-4 rounded-xl border border-white/10 relative z-20">
+                                <label className="text-sm font-bold text-emerald-400 mb-3 block flex items-center gap-2">
+                                    <Clock size={16} /> Event Timing
+                                </label>
+                                <DatePicker
+                                    selected={form.start_time ? new Date(form.start_time) : null}
+                                    onChange={(date: Date | null) => setForm({ ...form, start_time: date ? date.toISOString() : '' })}
+                                    showTimeSelect
+                                    filterTime={(time) => {
+                                        const currentDate = new Date();
+                                        const selectedDate = new Date(time);
+                                        return currentDate.getTime() < selectedDate.getTime();
+                                    }}
+                                    timeFormat="HH:mm"
+                                    timeIntervals={15}
+                                    dateFormat="MMMM d, yyyy h:mm aa"
+                                    className="input-field w-full bg-midnight-black p-3 rounded border border-gray-700 text-white focus:border-emerald-500 transition-colors cursor-pointer"
+                                    placeholderText="Click to select Date & Time"
+                                    wrapperClassName="w-full"
+                                    popperClassName="!z-50"
+                                />
+                                <style jsx global>{`
+                                    .react-datepicker-wrapper { width: 100%; }
+                                    .react-datepicker {
+                                        background-color: #1a1a2e;
+                                        border-color: #333;
+                                        color: #fff;
+                                        font-family: inherit;
+                                    }
+                                    .react-datepicker__header {
+                                        background-color: #16213e;
+                                        border-bottom: 1px solid #333;
+                                    }
+                                    .react-datepicker__current-month, .react-datepicker-time__header, .react-datepicker-year-header {
+                                        color: #fff;
+                                    }
+                                    .react-datepicker__day-name, .react-datepicker__day, .react-datepicker__time-name {
+                                        color: #ccc;
+                                    }
+                                    .react-datepicker__day:hover, .react-datepicker__month-text:hover, .react-datepicker__quarter-text:hover, .react-datepicker__year-text:hover {
+                                        background-color: #0f3460;
+                                        color: #fff;
+                                    }
+                                    .react-datepicker__day--selected, .react-datepicker__day--keyboard-selected {
+                                        background-color: #e94560 !important;
+                                        color: #fff;
+                                    }
+                                    .react-datepicker__time-container {
+                                        border-left: 1px solid #333;
+                                    }
+                                    .react-datepicker__time-container .react-datepicker__time {
+                                        background: #1a1a2e;
+                                        color: #fff;
+                                    }
+                                    .react-datepicker__time-container .react-datepicker__time .react-datepicker__time-box ul.react-datepicker__time-list li.react-datepicker__time-list-item:hover {
+                                        background-color: #0f3460;
+                                        color: #fff;
+                                    }
+                                    .react-datepicker__time-container .react-datepicker__time .react-datepicker__time-box ul.react-datepicker__time-list li.react-datepicker__time-list-item--selected {
+                                        background-color: #e94560 !important;
+                                    }
+                                `}</style>
                             </div>
 
                             <div className="flex gap-2">

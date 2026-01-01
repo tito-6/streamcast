@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Image, Search, Plus, Save, Edit2, X } from 'lucide-react'; // Imports fixed
+import { Image, Search, Plus, Save, Edit2, X, Trash2, CheckCircle, Power } from 'lucide-react'; // Imports fixed
 import AdminLayout from '../../components/AdminLayout';
 import ImageUpload from '../../components/ImageUpload';
 
@@ -61,6 +61,21 @@ const ContentPage = () => {
                 cancelEdit();
             }
         } catch (err) { console.error(err); }
+    };
+
+    const handleDelete = async (id: number) => {
+        if (!confirm("Delete this banner?")) return;
+        await fetch(`/api/content/banners/${id}`, { method: 'DELETE' });
+        setBanners(banners.filter(b => b.id !== id));
+    };
+
+    const handleActivate = async (banner: Banner) => {
+        await fetch('/api/content/banners', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ...banner, is_active: true })
+        });
+        fetchBanners();
     };
 
     return (
@@ -143,16 +158,31 @@ const ContentPage = () => {
                                         <p className="text-sm text-gray-400">{banner.subtitle_en}</p>
                                     </div>
                                     <div className="flex items-center gap-2">
+                                        {!banner.is_active && (
+                                            <button
+                                                onClick={() => handleActivate(banner)}
+                                                className="p-2 text-gray-400 hover:text-emerald-400 bg-gray-800/50 hover:bg-emerald-900/20 rounded-lg transition-colors"
+                                                title="Set Active"
+                                            >
+                                                <Power size={16} />
+                                            </button>
+                                        )}
                                         {banner.is_active && (
-                                            <span className="bg-emerald-900/30 text-emerald-400 px-3 py-1 rounded-full text-xs font-bold border border-emerald-900/50">
-                                                ACTIVE
+                                            <span className="flex items-center gap-1 bg-emerald-900/30 text-emerald-400 px-3 py-1 rounded-full text-xs font-bold border border-emerald-900/50">
+                                                <CheckCircle size={12} /> ACTIVE
                                             </span>
                                         )}
                                         <button
                                             onClick={() => handleEdit(banner)}
-                                            className="p-2 text-gray-400 hover:text-white bg-gray-800/50 hover:bg-gray-700/50 rounded-lg transition-colors"
+                                            className="p-2 text-blue-400 hover:text-white bg-gray-800/50 hover:bg-blue-900/20 rounded-lg transition-colors"
                                         >
                                             <Edit2 size={16} />
+                                        </button>
+                                        <button
+                                            onClick={() => banner.id && handleDelete(banner.id)}
+                                            className="p-2 text-red-400 hover:text-white bg-gray-800/50 hover:bg-red-900/20 rounded-lg transition-colors"
+                                        >
+                                            <Trash2 size={16} />
                                         </button>
                                     </div>
                                 </div>

@@ -66,7 +66,7 @@ const Navbar: React.FC<NavbarProps> = () => {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center gap-2 bg-white/5 rounded-full px-4 py-2 border border-white/5">
+          <div className="hidden lg:flex items-center gap-6 bg-white/5 rounded-full px-4 py-2 border border-white/5">
             <Link href="/" className="nav-item">
               <FiHome /> <span>{t.home}</span>
             </Link>

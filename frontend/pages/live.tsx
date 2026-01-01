@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Layout from '../components/Layout';
 import { MdLiveTv, MdPeople, MdTimer, MdShare, MdOutlineSportsEsports, MdSettings, MdCheck, MdVolumeUp, MdVolumeOff } from 'react-icons/md';
 import { BiJoystick, BiFullscreen, BiExitFullscreen } from 'react-icons/bi';
+import AdSpace from '../components/AdSpace';
 
 interface StreamDetails {
   title: string;
@@ -12,6 +13,7 @@ interface StreamDetails {
   viewer_count: number;
   banner_url?: string;
   thumbnail_url?: string;
+  offline_banner_url?: string;
   pre_match_details?: string;
   post_match_details?: string;
   stream_key?: string;
@@ -41,6 +43,8 @@ const LivePage = () => {
   const [volume, setVolume] = useState(1);
   const [isMuted, setIsMuted] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [seekRange, setSeekRange] = useState({ start: 0, end: 0 });
 
   useEffect(() => {
     const fetchStatus = async () => {
@@ -67,6 +71,7 @@ const LivePage = () => {
               viewer_count: realViewerCount, // Use Real Count
               banner_url: liveStream.banner_url,
               thumbnail_url: liveStream.thumbnail_url,
+              offline_banner_url: liveStream.offline_banner_url,
               pre_match_details: liveStream.pre_match_details,
               post_match_details: liveStream.post_match_details,
               stream_key: liveStream.stream_key
@@ -80,6 +85,7 @@ const LivePage = () => {
               viewer_count: 0,
               banner_url: s.banner_url,
               thumbnail_url: s.thumbnail_url,
+              offline_banner_url: s.offline_banner_url,
               pre_match_details: s.pre_match_details,
               post_match_details: s.post_match_details
             });
@@ -250,12 +256,19 @@ const LivePage = () => {
     }
   };
 
-  const handleFullscreen = () => {
+  const handleFullscreen = async () => {
     if (!containerRef.current) return;
     if (!document.fullscreenElement) {
-      containerRef.current.requestFullscreen().catch(err => {
+      try {
+        await containerRef.current.requestFullscreen();
+        // @ts-ignore
+        if (screen.orientation && screen.orientation.lock) {
+          // @ts-ignore
+          await screen.orientation.lock('landscape').catch(e => console.log('Orientation lock failed:', e));
+        }
+      } catch (err: any) {
         console.error(`Error attempting to enable fullscreen: ${err.message}`);
-      });
+      }
     } else {
       document.exitFullscreen();
     }
@@ -265,6 +278,9 @@ const LivePage = () => {
     <Layout title={stream.title + " | Live"}>
       <div className="relative pt-24 pb-12 overflow-hidden bg-black min-h-screen">
         <div className="container mx-auto px-4 relative z-10">
+
+          {/* Ad Space - Top */}
+          <AdSpace reference="live_top" className="container mx-auto max-w-4xl" />
 
           {/* Video Player Container */}
           <div
@@ -278,13 +294,40 @@ const LivePage = () => {
 
             <video
               ref={videoRef}
-              className="w-full h-full object-contain"
               playsInline
+              onTimeUpdate={() => {
+                if (videoRef.current) {
+                  setCurrentTime(videoRef.current.currentTime);
+                  if (videoRef.current.seekable.length > 0) {
+                    const start = videoRef.current.seekable.start(0);
+                    const end = videoRef.current.seekable.end(videoRef.current.seekable.length - 1);
+                    setSeekRange({ start, end });
+                  }
+                }
+              }}
             // Removed native controls
             />
 
             {/* Custom Control Bar */}
             <div className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent px-4 py-4 z-50 transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0'}`}>
+
+              {/* DVR Seek Bar */}
+              <div className="mb-4 px-1 group/seek">
+                <input
+                  type="range"
+                  min={seekRange.start}
+                  max={seekRange.end || 100}
+                  step="0.1"
+                  value={currentTime}
+                  onChange={(e) => {
+                    const val = parseFloat(e.target.value);
+                    if (videoRef.current) videoRef.current.currentTime = val;
+                    setCurrentTime(val);
+                  }}
+                  className="w-full h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer accent-emerald-500 hover:h-2 transition-all"
+                />
+              </div>
+
               <div className="flex items-center justify-between gap-4">
 
                 {/* Left Controls */}
@@ -358,12 +401,16 @@ const LivePage = () => {
 
             {/* Offline Overlay */}
             {!stream.is_live && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black/80 backdrop-blur-sm z-20 pointer-events-none">
-                <div className="text-center">
-                  <MdLiveTv className="text-6xl text-gray-600 mx-auto mb-4" />
-                  <h2 className="text-2xl font-bold text-white mb-2">Stream is Offline</h2>
-                  <p className="text-gray-400">Waiting for broadcast to start...</p>
-                </div>
+              <div className="absolute inset-0 flex items-center justify-center bg-black/80 backdrop-blur-sm z-20 pointer-events-none overflow-hidden">
+                {stream.offline_banner_url ? (
+                  <img src={stream.offline_banner_url} alt="Offline" className="w-full h-full object-cover opacity-70" />
+                ) : (
+                  <div className="text-center">
+                    <MdLiveTv className="text-6xl text-gray-600 mx-auto mb-4" />
+                    <h2 className="text-2xl font-bold text-white mb-2">Stream is Offline</h2>
+                    <p className="text-gray-400">Waiting for broadcast to start...</p>
+                  </div>
+                )}
               </div>
             )}
 
@@ -404,6 +451,7 @@ const LivePage = () => {
             </div>
 
             <div className="lg:w-80 space-y-4">
+              <AdSpace reference="live_sidebar" />
               <button
                 onClick={handleShare}
                 className="w-full btn-primary py-3 flex items-center justify-center gap-2 hover:bg-emerald-600 transition-colors"

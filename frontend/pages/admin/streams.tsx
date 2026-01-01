@@ -12,6 +12,7 @@ interface Stream {
     stream_key: string;
     banner_url: string;
     thumbnail_url: string;
+    offline_banner_url: string;
     pre_match_details: string;
     post_match_details: string;
 }
@@ -160,6 +161,13 @@ const Streams = () => {
                                             value={editingStream.thumbnail_url || ''}
                                             onChange={(url) => setEditingStream({ ...editingStream, thumbnail_url: url })}
                                             label="Thumbnail"
+                                        />
+                                    </div>
+                                    <div className="col-span-2">
+                                        <ImageUpload
+                                            value={editingStream.offline_banner_url || ''}
+                                            onChange={(url) => setEditingStream({ ...editingStream, offline_banner_url: url })}
+                                            label="Offline Screen Image"
                                         />
                                     </div>
                                 </div>

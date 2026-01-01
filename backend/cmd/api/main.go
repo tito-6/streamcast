@@ -88,6 +88,7 @@ func main() {
 		api.GET("/content/banners", handlers.GetBanners)
 		api.GET("/content/active-banner", handlers.GetActiveBanner)
 		api.POST("/content/banners", handlers.UpdateBanner)
+		api.DELETE("/content/banners/:id", handlers.DeleteBanner)
 
 		// CMS - Events
 		api.GET("/events", handlers.GetEvents)
@@ -102,6 +103,12 @@ func main() {
 		api.POST("/posts", handlers.CreatePost)
 		api.PUT("/posts/:id", handlers.UpdatePost)
 		api.DELETE("/posts/:id", handlers.DeletePost)
+
+		// CMS - Ads
+		api.GET("/ads", handlers.GetAds)
+		api.POST("/ads", handlers.CreateAd)
+		api.PUT("/ads/:id", handlers.UpdateAd)
+		api.DELETE("/ads/:id", handlers.DeleteAd)
 	}
 
 	log.Println("HTTP Server starting on :8080")

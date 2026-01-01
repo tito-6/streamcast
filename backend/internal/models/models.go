@@ -26,6 +26,7 @@ type Stream struct {
 	SportCategory    string         `json:"sport_category"`
 	ThumbnailURL     string         `json:"thumbnail_url"`
 	BannerURL        string         `json:"banner_url"`         // New: Stream specific banner
+	OfflineBannerURL string         `json:"offline_banner_url"` // New: Banner shown when offline
 	PreMatchDetails  string         `json:"pre_match_details"`  // New: Info before match
 	PostMatchDetails string         `json:"post_match_details"` // New: Info after match
 	Language         string         `json:"language"`
@@ -99,4 +100,16 @@ type Post struct {
 	IsFeatured bool      `json:"is_featured"`
 	CreatedAt  time.Time `json:"created_at"`
 	UpdatedAt  time.Time `json:"updated_at"`
+}
+
+type Ad struct {
+	ID        uint      `gorm:"primaryKey" json:"id"`
+	Reference string    `json:"reference"` // e.g. "homepage_top"
+	Code      string    `json:"code"`      // HTML/JS code
+	ImageURL  string    `json:"image_url"`
+	LinkURL   string    `json:"link_url"`
+	Size      string    `json:"size"` // e.g. "auto", "728x90", "300x250"
+	IsActive  bool      `json:"is_active"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }

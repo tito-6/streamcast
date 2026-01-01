@@ -3,6 +3,7 @@ import Head from 'next/head';
 import Script from 'next/script';
 import Navbar from './Navbar';
 import Footer from './Footer';
+import AdSpace from './AdSpace';
 
 interface LayoutProps {
   children: ReactNode;
@@ -73,6 +74,18 @@ const Layout: React.FC<LayoutProps> = ({
           <main className="min-h-screen">
             {children}
           </main>
+
+          {/* Global Skyscraper Ads (Desktop Only) */}
+          <div className="hidden 2xl:block fixed left-0 top-32 z-40 w-[160px] h-[600px] pointer-events-none pl-2">
+            <div className="pointer-events-auto">
+              <AdSpace reference="site_left" className="my-0" />
+            </div>
+          </div>
+          <div className="hidden 2xl:block fixed right-0 top-32 z-40 w-[160px] h-[600px] pointer-events-none pr-2">
+            <div className="pointer-events-auto">
+              <AdSpace reference="site_right" className="my-0" />
+            </div>
+          </div>
         </div>
         <Footer />
       </div>

@@ -4,6 +4,7 @@ import HeroSection from '../components/HeroSection';
 import { getStreamStatus, StreamStatus } from '../lib/api';
 import { MdLiveTv, MdArticle } from 'react-icons/md';
 import Link from 'next/link';
+import AdSpace from '../components/AdSpace';
 
 interface Post {
   id: number;
@@ -67,6 +68,11 @@ export default function HomePage() {
       {/* Hero Section */}
       <HeroSection lang={language} />
 
+      {/* Ad Space - Top */}
+      <div className="container mx-auto px-4 lg:px-8 mt-8">
+        <AdSpace reference="home_top" />
+      </div>
+
       {/* Live Now Banner (if online) */}
       {status?.online && (
         <div className="container mx-auto px-4 lg:px-8 -mt-10 relative z-10">
@@ -97,81 +103,85 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* Archives / Past Streams */}
-      {archives.length > 0 && (
-        <div className="container mx-auto px-4 lg:px-8 py-10 pb-0">
-          <div className="flex items-center gap-3 mb-8">
-            <MdLiveTv className="text-3xl text-emerald-energy" />
-            <h2 className="text-3xl font-bold text-white">
-              {language === 'ar' ? 'أرشيف البث' : 'Recorded Streams'}
-            </h2>
-          </div>
-          <div className="grid md:grid-cols-4 gap-6">
-            {archives.map((arch) => (
-              <a key={arch.id} href={arch.file_path} target="_blank" rel="noopener noreferrer" className="glass-panel group rounded-xl overflow-hidden hover:border-emerald-energy transition-all block">
-                <div className="h-32 bg-gray-900 relative">
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <MdLiveTv className="text-4xl text-gray-700 group-hover:text-emerald-energy transition-colors" />
-                  </div>
-                  <span className="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
-                    {arch.duration}
-                  </span>
-                </div>
-                <div className="p-4">
-                  <h3 className="font-bold text-white line-clamp-1 mb-1">{arch.title}</h3>
-                  <span className="text-xs text-white/40">
-                    {format(new Date(arch.created_at), 'PPP', { locale: language === 'ar' ? ar : language === 'tr' ? tr : enUS })}
-                  </span>
-                </div>
-              </a>
-            ))}
-          </div>
-        </div>
-      )}
+      <div className="container mx-auto px-4 lg:px-8 py-10">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
 
-      {/* Latest News / Posts */}
-      <div className="container mx-auto px-4 lg:px-8 py-20">
-        <div className="flex items-center gap-3 mb-8">
-          <MdArticle className="text-3xl text-emerald-energy" />
-          <h2 className="text-3xl font-bold text-white">
-            {t.lastNews}
-          </h2>
-        </div>
+          {/* Main Content Area (3 Cols) */}
+          <div className="lg:col-span-3 space-y-16">
 
-        <div className="grid md:grid-cols-3 gap-8">
-          {posts.map(post => (
-            <Link key={post.id} href={`/posts/${post.id}`} className="glass-panel group rounded-xl overflow-hidden hover:border-emerald-energy transition-all block">
-              <div className="h-48 bg-gray-800 overflow-hidden relative">
-                <img
-                  src={getImageUrl(post.image_url) || 'https://via.placeholder.com/400'}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                  alt={language === 'ar' ? post.title_ar : post.title_en}
-                />
-                <div className="absolute top-3 left-3 bg-midnight-black/80 backdrop-blur px-2 py-1 rounded text-xs text-emerald-energy font-bold uppercase tracking-wider">
-                  {post.category}
+            {/* Archives / Past Streams */}
+            {archives.length > 0 && (
+              <div>
+                <div className="flex items-center gap-3 mb-8">
+                  <MdLiveTv className="text-3xl text-emerald-energy" />
+                  <h2 className="text-3xl font-bold text-white">
+                    {language === 'ar' ? 'أرشيف البث' : 'Recorded Streams'}
+                  </h2>
+                </div>
+                <div className="grid md:grid-cols-3 gap-6">
+                  {archives.map((arch) => (
+                    <a key={arch.id} href={arch.file_path} target="_blank" rel="noopener noreferrer" className="glass-panel group rounded-xl overflow-hidden hover:border-emerald-energy transition-all block">
+                      <div className="h-32 bg-gray-900 relative">
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <MdLiveTv className="text-4xl text-gray-700 group-hover:text-emerald-energy transition-colors" />
+                        </div>
+                        <span className="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
+                          {arch.duration}
+                        </span>
+                      </div>
+                      <div className="p-4">
+                        <h3 className="font-bold text-white line-clamp-1 mb-1">{arch.title}</h3>
+                        <span className="text-xs text-white/40">
+                          {format(new Date(arch.created_at), 'PPP', { locale: language === 'ar' ? ar : language === 'tr' ? tr : enUS })}
+                        </span>
+                      </div>
+                    </a>
+                  ))}
                 </div>
               </div>
-              <div className="p-6">
-                <h3 className="text-xl font-bold text-white mb-3 group-hover:text-emerald-energy transition-colors">
-                  {language === 'ar' ? post.title_ar : language === 'tr' ? post.title_tr : post.title_en}
-                </h3>
-                <p className="text-white/60 text-sm line-clamp-3 mb-4">
-                  {language === 'ar' ? post.content_ar : language === 'tr' ? post.content_tr : post.content_en}
-                </p>
-                <div className="flex items-center justify-between mt-4 border-t border-gray-800 pt-3">
-                  <span className="text-xs text-white/40">
-                    {format(new Date(post.created_at), 'PPP', { locale: language === 'ar' ? ar : language === 'tr' ? tr : enUS })}
-                  </span>
-                  <span className="text-xs text-emerald-energy font-bold flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-                    {t.viewDetails} &rarr;
-                  </span>
-                </div>
+            )}
+
+            {/* Latest News / Posts */}
+            <div>
+              <div className="flex items-center gap-3 mb-8">
+                <MdArticle className="text-3xl text-emerald-energy" />
+                <h2 className="text-3xl font-bold text-white">
+                  {t.lastNews}
+                </h2>
               </div>
-            </Link>
-          ))}
-          {posts.length === 0 && (
-            <div className="col-span-3 text-center text-white/50 py-10">No news updates available.</div>
-          )}
+
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {posts.map(post => (
+                  <Link key={post.id} href={`/posts/${post.id}`} className="glass-panel group rounded-xl overflow-hidden hover:border-emerald-energy transition-all block">
+                    <div className="h-48 bg-gray-800 overflow-hidden relative">
+                      <img
+                        src={getImageUrl(post.image_url) || 'https://via.placeholder.com/400'}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        alt={language === 'ar' ? post.title_ar : post.title_en}
+                      />
+                    </div>
+                    <div className="p-6">
+                      <h3 className="text-xl font-bold text-white mb-3 group-hover:text-emerald-energy transition-colors">
+                        {language === 'ar' ? post.title_ar : language === 'tr' ? post.title_tr : post.title_en}
+                      </h3>
+                      <p className="text-white/60 text-sm line-clamp-3 mb-4">
+                        {language === 'ar' ? post.content_ar : language === 'tr' ? post.content_tr : post.content_en}
+                      </p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Sidebar Area (1 Col) */}
+          <div className="space-y-8">
+            <div className="glass-panel p-4 rounded-xl sticky top-24">
+              <h4 className="text-white font-bold mb-4 border-b border-gray-700 pb-2">Advertisement</h4>
+              <AdSpace reference="home_sidebar" />
+            </div>
+          </div>
+
         </div>
       </div>
 
