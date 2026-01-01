@@ -55,6 +55,7 @@ func UpdateStream(c *gin.Context) {
 	stream.SportCategory = input.SportCategory
 	stream.BannerURL = input.BannerURL
 	stream.ThumbnailURL = input.ThumbnailURL
+	stream.OfflineBannerURL = input.OfflineBannerURL
 	stream.PreMatchDetails = input.PreMatchDetails
 	stream.PostMatchDetails = input.PostMatchDetails
 
