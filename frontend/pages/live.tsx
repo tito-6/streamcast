@@ -17,6 +17,7 @@ interface StreamDetails {
   pre_match_details?: string;
   post_match_details?: string;
   stream_key?: string;
+  language?: string;
 }
 
 const LivePage = () => {
@@ -74,7 +75,8 @@ const LivePage = () => {
               offline_banner_url: liveStream.offline_banner_url,
               pre_match_details: liveStream.pre_match_details,
               post_match_details: liveStream.post_match_details,
-              stream_key: liveStream.stream_key
+              stream_key: liveStream.stream_key,
+              language: liveStream.language
             });
           } else {
             const s = dataStreams.data[0];
@@ -113,7 +115,7 @@ const LivePage = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          language: currentStream.language || 'en', // using stream language as proxy or default
+          language: stream.language || 'en', // using stream language as proxy or default
           device_type: deviceType
         })
       }).catch(err => console.error("Heartbeat failed", err));
