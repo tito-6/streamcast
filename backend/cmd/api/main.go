@@ -79,6 +79,8 @@ func main() {
 		// Analytics
 		api.GET("/stats", handlers.GetStats)
 		api.POST("/heartbeat", handlers.ViewerHeartbeat)
+		api.GET("/admin/analytics/realtime", handlers.GetAnalyticsRealtime)
+		api.GET("/admin/analytics/historical", handlers.GetAnalyticsHistorical)
 
 		// CMS - Users
 		api.GET("/users", handlers.GetUsers)

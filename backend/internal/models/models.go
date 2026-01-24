@@ -113,3 +113,11 @@ type Ad struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
+type ViewerStat struct {
+	ID         uint      `gorm:"primaryKey" json:"id"`
+	IP         string    `json:"ip"`
+	UserAgent  string    `json:"user_agent"`
+	DeviceType string    `json:"device_type"` // mobile, desktop, tablet
+	Language   string    `json:"language"`
+	CreatedAt  time.Time `gorm:"index" json:"created_at"` // Indexed for time-range queries
+}
