@@ -258,6 +258,62 @@ async def get_posts():
     # Fallback to empty if file missing
     return {"data": []}
 
+# --- Settings & Instagram ---
+SETTINGS_FILE = "settings.json"
+
+@app.get("/api/settings")
+async def get_settings():
+    if os.path.exists(SETTINGS_FILE):
+        with open(SETTINGS_FILE, "r") as f:
+            return json.load(f)
+    return {
+        "siteName": "StreamCast Platform",
+        "adminEmail": "admin@streamcast.com",
+        "maintenanceMode": False,
+        "allowRegistration": True,
+        "instagram_username": "event_01s"
+    }
+
+@app.post("/api/settings")
+async def save_settings(request: Request):
+    data = await request.json()
+    with open(SETTINGS_FILE, "w") as f:
+        json.dump(data, f)
+    return {"status": "saved"}
+
+@app.get("/api/instagram")
+async def get_instagram():
+    # Load username from settings
+    username = "event_01s"
+    if os.path.exists(SETTINGS_FILE):
+        with open(SETTINGS_FILE, "r") as f:
+            username = json.load(f).get("instagram_username", "event_01s")
+
+    # Return mock data for the frontend to render
+    # In a real scenario, this would use the Instagram Basic Display API
+    return {
+        "data": [
+            {
+                "id": "1",
+                "media_url": "https://images.unsplash.com/photo-1518609878373-06d740f60d8b?auto=format&fit=crop&w=400&q=80",
+                "caption": f"Follow us @{username} for live updates! ⚽🔥 #football #live",
+                "permalink": f"https://instagram.com/{username}"
+            },
+            {
+                "id": "2",
+                "media_url": "https://images.unsplash.com/photo-1541252260730-0412e8e2108e?auto=format&fit=crop&w=400&q=80",
+                "caption": "Championship finals details announced! 🏆",
+                "permalink": f"https://instagram.com/{username}"
+            },
+            {
+                "id": "3",
+                "media_url": "https://images.unsplash.com/photo-1579952363873-27f3bde9be2d?auto=format&fit=crop&w=400&q=80",
+                "caption": "Who is your player of the match? 🌟",
+                "permalink": f"https://instagram.com/{username}"
+            }
+        ]
+    }
+
 # --- AI Chat Agent ---
 @app.post("/api/chat")
 async def chat_agent(request: Request):

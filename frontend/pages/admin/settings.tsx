@@ -1,18 +1,41 @@
-import React, { useState } from 'react';
-import { Save, Server, Globe, Shield } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Save, Server, Globe, Shield, Instagram } from 'lucide-react';
 import AdminLayout from '../../components/AdminLayout';
 
 const SettingsPage = () => {
     const [config, setConfig] = useState({
         siteName: 'StreamCast Platform',
         adminEmail: 'admin@streamcast.com',
-        maintenanceMode: false,
-        allowRegistration: true
+        maintenanceMode: 'false',
+        allowRegistration: 'true',
+        instagram_username: 'event_01s',
+        instagram_custom_feed: '[]'
     });
 
-    const handleSave = () => {
-        alert('Settings saved (Mock)');
-        // In a real app, POST to /api/settings
+    useEffect(() => {
+        // Fetch initial settings from backend
+        fetch('/api/settings')
+            .then(res => res.json())
+            .then(json => {
+                if (json.data) {
+                    setConfig(prev => ({ ...prev, ...json.data }));
+                }
+            })
+            .catch(err => console.error("Failed to load settings", err));
+    }, []);
+
+    const handleSave = async () => {
+        try {
+            await fetch('/api/settings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(config)
+            });
+            alert('Settings saved successfully!');
+        } catch (e) {
+            console.error(e);
+            alert('Failed to save settings');
+        }
     };
 
     return (
@@ -50,6 +73,66 @@ const SettingsPage = () => {
                         </div>
                     </div>
 
+                    {/* Social Media Settings */}
+                    <div className="glass-panel p-6 rounded-2xl space-y-6">
+                        <div className="flex items-center gap-2 mb-4">
+                            <Instagram className="text-emerald-energy" />
+                            <h3 className="text-lg font-bold text-white">Instagram Feed Settings</h3>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm text-gray-400 mb-2">Instagram Username (Fallback)</label>
+                            <input
+                                value={config.instagram_username}
+                                onChange={e => setConfig({ ...config, instagram_username: e.target.value })}
+                                className="w-full bg-midnight-black border border-gray-700 rounded-lg p-3 text-white focus:border-emerald-energy transition-colors"
+                                placeholder="event_01s"
+                            />
+                        </div>
+
+                        <div className="space-y-4">
+                            <label className="block text-sm text-gray-400">Instagram Post Links</label>
+
+                            {(config.instagram_custom_feed || '').split('\n').filter(l => l.trim() !== '').map((link, idx) => (
+                                <div key={idx} className="flex gap-2">
+                                    <div className="flex-1 relative">
+                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-500/50 text-xs font-bold">{idx + 1}</span>
+                                        <input
+                                            value={link}
+                                            onChange={(e) => {
+                                                const links = (config.instagram_custom_feed || '').split('\n');
+                                                links[idx] = e.target.value;
+                                                setConfig({ ...config, instagram_custom_feed: links.join('\n') });
+                                            }}
+                                            className="w-full bg-midnight-black border border-gray-700 rounded-lg p-3 pl-8 text-white text-sm focus:border-emerald-energy transition-colors"
+                                            placeholder="Paste Instagram Link..."
+                                        />
+                                    </div>
+                                    <button
+                                        onClick={() => {
+                                            const links = (config.instagram_custom_feed || '').split('\n');
+                                            links.splice(idx, 1);
+                                            setConfig({ ...config, instagram_custom_feed: links.join('\n') });
+                                        }}
+                                        className="p-3 bg-red-500/10 text-red-500 rounded-lg hover:bg-red-500/20 transition-colors"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /><line x1="10" y1="11" x2="10" y2="17" /><line x1="14" y1="11" x2="14" y2="17" /></svg>
+                                    </button>
+                                </div>
+                            ))}
+
+                            <button
+                                onClick={() => {
+                                    const current = config.instagram_custom_feed || '';
+                                    setConfig({ ...config, instagram_custom_feed: current + (current ? '\n' : '') + 'https://' });
+                                }}
+                                className="w-full py-3 border-2 border-dashed border-gray-700 rounded-xl text-gray-500 hover:text-emerald-500 hover:border-emerald-500/50 hover:bg-emerald-500/5 transition-all text-sm font-bold flex items-center justify-center gap-2"
+                            >
+                                <span>+ Add New Link</span>
+                            </button>
+                        </div>
+                    </div>
+
                     {/* System Controls */}
                     <div className="glass-panel p-6 rounded-2xl space-y-6">
                         <div className="flex items-center gap-2 mb-4">
@@ -63,10 +146,10 @@ const SettingsPage = () => {
                                 <p className="text-xs text-gray-500">Disable public access to the site</p>
                             </div>
                             <button
-                                onClick={() => setConfig({ ...config, maintenanceMode: !config.maintenanceMode })}
-                                className={`w-12 h-6 rounded-full transition-colors relative ${config.maintenanceMode ? 'bg-emerald-energy' : 'bg-gray-700'}`}
+                                onClick={() => setConfig({ ...config, maintenanceMode: config.maintenanceMode === 'true' ? 'false' : 'true' })}
+                                className={`w-12 h-6 rounded-full transition-colors relative ${config.maintenanceMode === 'true' ? 'bg-emerald-energy' : 'bg-gray-700'}`}
                             >
-                                <div className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform ${config.maintenanceMode ? 'translate-x-6' : ''}`} />
+                                <div className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform ${config.maintenanceMode === 'true' ? 'translate-x-6' : ''}`} />
                             </button>
                         </div>
 
@@ -76,10 +159,10 @@ const SettingsPage = () => {
                                 <p className="text-xs text-gray-500">Allow new users to sign up</p>
                             </div>
                             <button
-                                onClick={() => setConfig({ ...config, allowRegistration: !config.allowRegistration })}
-                                className={`w-12 h-6 rounded-full transition-colors relative ${config.allowRegistration ? 'bg-emerald-energy' : 'bg-gray-700'}`}
+                                onClick={() => setConfig({ ...config, allowRegistration: config.allowRegistration === 'true' ? 'false' : 'true' })}
+                                className={`w-12 h-6 rounded-full transition-colors relative ${config.allowRegistration === 'true' ? 'bg-emerald-energy' : 'bg-gray-700'}`}
                             >
-                                <div className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform ${config.allowRegistration ? 'translate-x-6' : ''}`} />
+                                <div className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform ${config.allowRegistration === 'true' ? 'translate-x-6' : ''}`} />
                             </button>
                         </div>
                     </div>

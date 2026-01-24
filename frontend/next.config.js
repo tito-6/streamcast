@@ -13,8 +13,20 @@ const nextConfig = {
   async rewrites() {
     return [
       {
+        source: '/api/scores',
+        destination: 'http://localhost:8001/api/scores',
+      },
+      {
+        source: '/api/chat',
+        destination: 'http://localhost:8001/api/chat',
+      },
+      {
+        source: '/api/posts',
+        destination: 'http://localhost:8001/api/posts',
+      },
+      {
         source: '/api/:path*',
-        destination: 'http://localhost:8001/api/:path*',
+        destination: 'http://localhost:8080/api/:path*',
       },
     ]
   },

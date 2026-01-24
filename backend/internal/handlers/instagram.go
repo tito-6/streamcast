@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"regexp"
 	"streamcast-backend/internal/models"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -22,7 +24,63 @@ type InstaResponse struct {
 }
 
 func GetInstagramFeed(c *gin.Context) {
-	// 1. Get Token from Settings
+	// 1. Check for Custom Manual Feed (Admin Overrides)
+	var customSetting models.Setting
+	if err := models.DB.Where("key = ?", "instagram_custom_feed").First(&customSetting).Error; err == nil && customSetting.Value != "" {
+		// Try to parse as JSON first
+		var customData []interface{}
+		if err := json.Unmarshal([]byte(customSetting.Value), &customData); err == nil {
+			c.JSON(http.StatusOK, gin.H{
+				"source": "manual",
+				"data":   customData,
+			})
+			return
+		}
+
+		// If not JSON, treat as Newline Separated URLs (User-Friendly Mode)
+		// User just pastes links like: https://instagram.com/p/ABC / https://instagram.com/reels/XYZ
+
+		lines := strings.Split(customSetting.Value, "\n")
+		var parsedData []gin.H
+
+		re := regexp.MustCompile(`/(p|reels|reel)/([^/?#&]+)`)
+
+		for _, line := range lines {
+			link := strings.TrimSpace(line)
+			if link == "" {
+				continue
+			}
+
+			// Try to extract shortcode
+			id := "post-" + fmt.Sprintf("%d", len(parsedData))
+			img := "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=400&q=80" // Placeholder
+
+			matches := re.FindStringSubmatch(link)
+			if len(matches) > 2 {
+				shortcode := matches[2]
+				id = shortcode
+				// Public media proxy (often works for public posts)
+				img = fmt.Sprintf("https://www.instagram.com/p/%s/media/?size=l", shortcode)
+			}
+
+			parsedData = append(parsedData, gin.H{
+				"id":        id,
+				"media_url": img,
+				"caption":   "View latest update on Instagram",
+				"permalink": link,
+			})
+		}
+
+		if len(parsedData) > 0 {
+			c.JSON(http.StatusOK, gin.H{
+				"source": "links",
+				"data":   parsedData,
+			})
+			return
+		}
+	}
+
+	// 2. Get Token from Settings
 	var setting models.Setting
 	if err := models.DB.Where("key = ?", "instagram_token").First(&setting).Error; err != nil || setting.Value == "" {
 		// Mock Data if no token
