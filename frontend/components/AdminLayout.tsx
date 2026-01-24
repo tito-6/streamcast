@@ -1,7 +1,7 @@
 import React, { ReactNode, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { LayoutDashboard, Radio, Users, Settings, LogOut, Menu, Image, Calendar, FileText, DollarSign } from 'lucide-react';
+import { LayoutDashboard, Radio, Users, Settings, LogOut, Menu, Image, Calendar, FileText, DollarSign, BarChart2, Database } from 'lucide-react';
 
 interface AdminLayoutProps {
     children: ReactNode;
@@ -24,7 +24,9 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         { name: 'News & Posts', path: '/admin/posts', icon: FileText },
         { name: 'Schedule', path: '/admin/schedule', icon: Calendar },
         { name: 'Advertising', path: '/admin/ads', icon: DollarSign },
+        { name: 'Analytics', path: '/admin/analytics', icon: BarChart2 },
         { name: 'Users', path: '/admin/users', icon: Users },
+        { name: 'Storage', path: '/admin/storage', icon: Database },
         { name: 'Settings', path: '/admin/settings', icon: Settings },
     ];
 

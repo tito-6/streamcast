@@ -108,7 +108,15 @@ const LivePage = () => {
     if (!stream.is_live) return;
 
     const sendHeartbeat = () => {
-      fetch('/api/heartbeat', { method: 'POST' }).catch(err => console.error("Heartbeat failed", err));
+      const deviceType = /Mobi|Android/i.test(navigator.userAgent) ? 'mobile' : 'desktop';
+      fetch('/api/heartbeat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          language: currentStream.language || 'en', // using stream language as proxy or default
+          device_type: deviceType
+        })
+      }).catch(err => console.error("Heartbeat failed", err));
     };
 
     // Send immediately then every 10s
