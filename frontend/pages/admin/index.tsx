@@ -34,10 +34,11 @@ const AdminDashboard = () => {
     });
 
     // Polling for real-time stats
+    // Polling for real-time stats
     useEffect(() => {
         const fetchStats = async () => {
             try {
-                const res = await fetch('http://localhost:8080/api/stats');
+                const res = await fetch('/api/stats');
                 const data = await res.json();
                 if (data.system) {
                     setStats(data);
@@ -57,19 +58,19 @@ const AdminDashboard = () => {
     const toggleStream = async () => {
         // Existing toggle logic...
         if (!isLive) {
-            alert("Start ingest via your RTMP software (OBS) to: rtmp://localhost/live");
+            alert("Start ingest via your RTMP software (OBS) to: rtmp://sportevent.online/live");
             return;
         }
 
         if (!confirm("Are you sure you want to STOP the active stream?")) return;
 
         try {
-            const res = await fetch('http://localhost:8080/api/streams');
+            const res = await fetch('/api/streams');
             const json = await res.json();
             const liveStream = json.data?.find((s: any) => s.is_live);
 
             if (liveStream) {
-                await fetch(`http://localhost:8080/api/streams/${liveStream.id}/stop`, { method: 'POST' });
+                await fetch(`/api/streams/${liveStream.id}/stop`, { method: 'POST' });
                 setIsLive(false);
                 alert("Stream stopped successfully.");
             } else {
@@ -97,7 +98,7 @@ const AdminDashboard = () => {
                         value={`${stats.system.cpu_usage.toFixed(1)}%`}
                         icon={Cpu}
                         color="text-emerald-energy"
-                        subtext="Sever Processing"
+                        subtext="Server Processing"
                     />
                     <StatCard
                         title="RAM Usage"
@@ -142,7 +143,7 @@ const AdminDashboard = () => {
                                 <div className={`w-3 h-3 rounded-full ${isLive ? "bg-red-500 animate-pulse" : "bg-gray-600"}`} />
                                 <div>
                                     <h4 className="text-white font-bold">Stream Ingest</h4>
-                                    <p className="text-xs text-gray-500">rtmp://localhost/live</p>
+                                    <p className="text-xs text-gray-500">rtmp://sportevent.online/live</p>
                                 </div>
                             </div>
                             <button

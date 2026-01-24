@@ -188,15 +188,15 @@ const InsightsPage = () => {
                         {/* Device Breakdown */}
                         <div className="glass-panel p-6 rounded-xl h-[200px] flex flex-col">
                             <h3 className="text-sm font-bold text-gray-400 mb-2 uppercase">Device Breakdown</h3>
-                            <div className="flex-1 min-h-0">
+                            <div className="w-full h-[120px]">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <PieChart>
                                         <Pie
                                             data={deviceData.length ? deviceData : [{ name: 'No Data', value: 1 }]}
                                             cx="50%"
                                             cy="50%"
-                                            innerRadius={40}
-                                            outerRadius={60}
+                                            innerRadius={30}
+                                            outerRadius={50}
                                             paddingAngle={5}
                                             dataKey="value"
                                         >
@@ -213,15 +213,15 @@ const InsightsPage = () => {
                         {/* Language Breakdown */}
                         <div className="glass-panel p-6 rounded-xl h-[200px] flex flex-col">
                             <h3 className="text-sm font-bold text-gray-400 mb-2 uppercase">Language Breakdown</h3>
-                            <div className="flex-1 min-h-0">
+                            <div className="w-full h-[120px]">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <PieChart>
                                         <Pie
                                             data={langData.length ? langData : [{ name: 'No Data', value: 1 }]}
                                             cx="50%"
                                             cy="50%"
-                                            innerRadius={40}
-                                            outerRadius={60}
+                                            innerRadius={30}
+                                            outerRadius={50}
                                             paddingAngle={5}
                                             dataKey="value"
                                         >
