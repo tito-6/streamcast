@@ -16,6 +16,7 @@ const AnalyticsPage = () => {
     // Historical State
     const [history, setHistory] = useState<any[]>([]);
     const [period, setPeriod] = useState('24h');
+    const [dateRange, setDateRange] = useState({ start: '', end: '' });
     const [loading, setLoading] = useState(true);
 
     // Fetch Realtime Every 5s
@@ -32,19 +33,30 @@ const AnalyticsPage = () => {
         return () => clearInterval(interval);
     }, []);
 
-    // Fetch Historical on Period Change
+    // Fetch Historical on Period/Range Change
     useEffect(() => {
         const fetchHistory = async () => {
             setLoading(true);
             try {
-                const res = await fetch(`/api/admin/analytics/historical?period=${period}`);
+                let url = `/api/admin/analytics/historical?period=${period}`;
+                if (period === 'custom' && dateRange.start && dateRange.end) {
+                    // Convert date strings to RFC3339
+                    const start = new Date(dateRange.start).toISOString();
+                    const end = new Date(dateRange.end).toISOString();
+                    url += `&start=${start}&end=${end}`;
+                }
+
+                const res = await fetch(url);
                 const json = await res.json();
                 if (json.chart) setHistory(json.chart);
             } catch (err) { console.error(err); }
             finally { setLoading(false); }
         };
-        fetchHistory();
-    }, [period]);
+
+        if (period !== 'custom' || (dateRange.start && dateRange.end)) {
+            fetchHistory();
+        }
+    }, [period, dateRange]);
 
     // Transform Data for Pie Charts
     const deviceData = Object.entries(realtime.devices).map(([name, value]) => ({ name, value }));
@@ -110,18 +122,43 @@ const AnalyticsPage = () => {
                 <div className="grid lg:grid-cols-3 gap-8">
                     {/* Main Historical Chart */}
                     <div className="lg:col-span-2 glass-panel p-6 rounded-xl">
-                        <div className="flex justify-between items-center mb-6">
+                        <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
                             <h3 className="text-xl font-bold text-white">Traffic Trends</h3>
-                            <div className="flex bg-black/40 rounded-lg p-1">
-                                {['24h', '7d', '30d'].map((p) => (
+
+                            <div className="flex flex-wrap items-center gap-2">
+                                <div className="flex bg-black/40 rounded-lg p-1">
+                                    {['24h', '7d', '30d'].map((p) => (
+                                        <button
+                                            key={p}
+                                            onClick={() => { setPeriod(p); setDateRange({ start: '', end: '' }); }}
+                                            className={`px-4 py-1 rounded text-sm font-medium transition-colors ${period === p ? 'bg-emerald-600 text-white' : 'text-gray-400 hover:text-white'}`}
+                                        >
+                                            {p}
+                                        </button>
+                                    ))}
                                     <button
-                                        key={p}
-                                        onClick={() => setPeriod(p)}
-                                        className={`px-4 py-1 rounded text-sm font-medium transition-colors ${period === p ? 'bg-emerald-600 text-white' : 'text-gray-400 hover:text-white'}`}
+                                        onClick={() => setPeriod('custom')}
+                                        className={`px-4 py-1 rounded text-sm font-medium transition-colors ${period === 'custom' ? 'bg-emerald-600 text-white' : 'text-gray-400 hover:text-white'}`}
                                     >
-                                        {p}
+                                        Custom
                                     </button>
-                                ))}
+                                </div>
+
+                                {period === 'custom' && (
+                                    <div className="flex items-center gap-2 bg-black/40 p-1 rounded-lg border border-gray-700">
+                                        <input
+                                            type="date"
+                                            className="bg-transparent text-white text-sm px-2 py-1 outline-none"
+                                            onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
+                                        />
+                                        <span className="text-gray-400">-</span>
+                                        <input
+                                            type="date"
+                                            className="bg-transparent text-white text-sm px-2 py-1 outline-none"
+                                            onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
+                                        />
+                                    </div>
+                                )}
                             </div>
                         </div>
                         <div className="h-[300px] w-full">

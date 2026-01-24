@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 	"runtime"
 	"sync"
@@ -150,21 +151,35 @@ func GetAnalyticsRealtime(c *gin.Context) {
 }
 
 func GetAnalyticsHistorical(c *gin.Context) {
-	period := c.Query("period") // "24h", "7d", "30d"
+	period := c.Query("period") // "custom", "24h", "7d", "30d"
+	startStr := c.Query("start")
+	endStr := c.Query("end")
+
 	var startTime time.Time
+	var endTime time.Time = time.Now()
 
-	switch period {
-	case "7d":
-		startTime = time.Now().AddDate(0, 0, -7)
-	case "30d":
-		startTime = time.Now().AddDate(0, 0, -30)
-	default: // 24h
-		startTime = time.Now().Add(-24 * time.Hour)
+	if period == "custom" && startStr != "" {
+		parsedStart, err := time.Parse(time.RFC3339, startStr)
+		if err == nil {
+			startTime = parsedStart
+		}
+		if endStr != "" {
+			parsedEnd, err := time.Parse(time.RFC3339, endStr)
+			if err == nil {
+				endTime = parsedEnd
+			}
+		}
+	} else {
+		// Presets
+		switch period {
+		case "7d":
+			startTime = time.Now().AddDate(0, 0, -7)
+		case "30d":
+			startTime = time.Now().AddDate(0, 0, -30)
+		default: // 24h
+			startTime = time.Now().Add(-24 * time.Hour)
+		}
 	}
-
-	// 1. Total Sessions (Unique IPs per hour)
-	// Complex query needed. For simplicity in this iteration:
-	// Count total rows in ViewerStats grouped by hour.
 
 	type ChartPoint struct {
 		Time  string `json:"time"`
@@ -172,15 +187,28 @@ func GetAnalyticsHistorical(c *gin.Context) {
 	}
 	var chartData []ChartPoint
 
-	// Group by hour
-	models.DB.Raw(`
-		SELECT to_char(created_at, 'YYYY-MM-DD HH24:00') as time, count(*) as count 
+	// Grouping interval depends on range
+	// < 2 days -> Group by hour
+	// > 2 days -> Group by day
+	interval := "YYYY-MM-DD HH24:00"
+	if endTime.Sub(startTime).Hours() > 48 {
+		interval = "YYYY-MM-DD"
+	}
+
+	// Postgres query
+	// Note: created_at between ? and ?
+	models.DB.Raw(fmt.Sprintf(`
+		SELECT to_char(created_at, '%s') as time, count(*) as count 
 		FROM viewer_stats 
-		WHERE created_at > ? 
+		WHERE created_at BETWEEN ? AND ?
 		GROUP BY time 
-		ORDER BY time ASC`, startTime).Scan(&chartData)
+		ORDER BY time ASC`, interval), startTime, endTime).Scan(&chartData)
 
 	c.JSON(http.StatusOK, gin.H{
 		"chart": chartData,
+		"range": map[string]string{
+			"start": startTime.Format(time.RFC3339),
+			"end":   endTime.Format(time.RFC3339),
+		},
 	})
 }
