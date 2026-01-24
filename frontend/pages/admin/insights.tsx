@@ -5,7 +5,7 @@ import { Users, Smartphone, Globe, Activity } from 'lucide-react';
 
 const COLORS = ['#00C49F', '#0088FE', '#FFBB28', '#FF8042', '#8884d8'];
 
-const AnalyticsPage = () => {
+const InsightsPage = () => {
     // Realtime State
     const [realtime, setRealtime] = useState({
         total_viewers: 0,
@@ -23,7 +23,7 @@ const AnalyticsPage = () => {
     useEffect(() => {
         const fetchRealtime = async () => {
             try {
-                const res = await fetch('/api/admin/analytics/realtime');
+                const res = await fetch('/api/admin/insights/realtime');
                 const data = await res.json();
                 if (data) setRealtime(data);
             } catch (err) { console.error(err); }
@@ -38,7 +38,7 @@ const AnalyticsPage = () => {
         const fetchHistory = async () => {
             setLoading(true);
             try {
-                let url = `/api/admin/analytics/historical?period=${period}`;
+                let url = `/api/admin/insights/historical?period=${period}`;
                 if (period === 'custom' && dateRange.start && dateRange.end) {
                     // Convert date strings to RFC3339
                     const start = new Date(dateRange.start).toISOString();
@@ -66,7 +66,7 @@ const AnalyticsPage = () => {
         <AdminLayout>
             <div className="space-y-8">
                 <div>
-                    <h1 className="text-3xl font-bold text-white mb-2">Live Analytics</h1>
+                    <h1 className="text-3xl font-bold text-white mb-2">Live Insights</h1>
                     <p className="text-gray-400">Real-time audience insights and historical trends.</p>
                 </div>
 
@@ -241,4 +241,4 @@ const AnalyticsPage = () => {
     );
 };
 
-export default AnalyticsPage;
+export default InsightsPage;
