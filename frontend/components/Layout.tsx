@@ -5,6 +5,7 @@ import Navbar from './Navbar';
 import Footer from './Footer';
 import AdSpace from './AdSpace';
 import ConsentBanner from './ConsentBanner';
+import SecurityMask from './SecurityMask';
 
 interface LayoutProps {
   children: ReactNode;
@@ -89,6 +90,7 @@ const Layout: React.FC<LayoutProps> = ({
           </div>
         </div>
         <Footer />
+        <SecurityMask />
         <ConsentBanner language={lang} />
       </div>
     </>

@@ -97,6 +97,7 @@ type Post struct {
 	ContentTr  string    `json:"content_tr"`
 	ImageURL   string    `json:"image_url"`
 	Category   string    `json:"category"`
+	Slug       string    `gorm:"index" json:"slug"`
 	IsFeatured bool      `json:"is_featured"`
 	CreatedAt  time.Time `json:"created_at"`
 	UpdatedAt  time.Time `json:"updated_at"`
@@ -120,4 +121,12 @@ type ViewerStat struct {
 	DeviceType string    `json:"device_type"` // mobile, desktop, tablet
 	Language   string    `json:"language"`
 	CreatedAt  time.Time `gorm:"index" json:"created_at"` // Indexed for time-range queries
+}
+
+type Setting struct {
+	ID        uint      `gorm:"primaryKey" json:"id"`
+	Key       string    `gorm:"unique;not null" json:"key"` // e.g. "site_title", "instagram_token"
+	Value     string    `json:"value"`
+	Type      string    `json:"type"` // "string", "boolean", "json"
+	UpdatedAt time.Time `json:"updated_at"`
 }

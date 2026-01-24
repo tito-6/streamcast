@@ -75,15 +75,11 @@ const Navbar: React.FC<NavbarProps> = () => {
               <MdLiveTv /> <span>{t.live}</span>
             </Link>
 
-            <Link href="/sports" className="nav-item">
-              <BiFootball /> <span>{t.sports}</span>
-            </Link>
-
             <Link href="/articles" className="nav-item">
               <MdArticle /> <span>{t.articles}</span>
             </Link>
 
-            <Link href="/schedule" className="nav-item">
+            <Link href="/sports/live-scores" className="nav-item">
               <FiTrendingUp /> <span>{t.schedule}</span>
             </Link>
 
@@ -159,13 +155,10 @@ const Navbar: React.FC<NavbarProps> = () => {
             <Link href="/live" className="mobile-link text-red-400">
               <MdLiveTv /> {t.live}
             </Link>
-            <Link href="/sports" className="mobile-link">
-              <BiFootball /> {t.sports}
-            </Link>
             <Link href="/articles" className="mobile-link">
               <MdArticle /> {t.articles}
             </Link>
-            <Link href="/schedule" className="mobile-link">
+            <Link href="/sports/live-scores" className="mobile-link">
               <FiTrendingUp /> {t.schedule}
             </Link>
             <Link href="/archive" className="mobile-link">

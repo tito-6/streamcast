@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Layout from '../components/Layout';
-import HeroSection from '../components/HeroSection';
+import NewsSlider from '../components/NewsSlider';
+import InstagramFeed from '../components/InstagramFeed';
 import { getStreamStatus, StreamStatus } from '../lib/api';
 import { MdLiveTv, MdArticle } from 'react-icons/md';
 import Link from 'next/link';
@@ -29,7 +30,7 @@ export default function HomePage() {
   const t = translations[language];
   const [status, setStatus] = useState<StreamStatus | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
-  const [archives, setArchives] = useState<any[]>([]);
+
 
   useEffect(() => {
     async function fetchData() {
@@ -43,12 +44,7 @@ export default function HomePage() {
         if (json.data) setPosts(json.data.slice(0, 3));
       } catch (err) { console.error(err); }
 
-      // Fetch archives
-      try {
-        const res = await fetch('/api/archives');
-        const json = await res.json();
-        if (json.data) setArchives(json.data.slice(0, 4));
-      } catch (err) { console.error(err); }
+
     }
     fetchData();
   }, []);
@@ -65,8 +61,8 @@ export default function HomePage() {
 
   return (
     <Layout lang={language}>
-      {/* Hero Section */}
-      <HeroSection lang={language} />
+      {/* News Slider (Replacing Hero) */}
+      <NewsSlider lang={language} />
 
       {/* Ad Space - Top */}
       <div className="container mx-auto px-4 lg:px-8 mt-8">
@@ -109,38 +105,6 @@ export default function HomePage() {
           {/* Main Content Area (3 Cols) */}
           <div className="lg:col-span-3 space-y-16">
 
-            {/* Archives / Past Streams */}
-            {archives.length > 0 && (
-              <div>
-                <div className="flex items-center gap-3 mb-8">
-                  <MdLiveTv className="text-3xl text-emerald-energy" />
-                  <h2 className="text-3xl font-bold text-white">
-                    {language === 'ar' ? 'أرشيف البث' : 'Recorded Streams'}
-                  </h2>
-                </div>
-                <div className="grid md:grid-cols-3 gap-6">
-                  {archives.map((arch) => (
-                    <a key={arch.id} href={arch.file_path} target="_blank" rel="noopener noreferrer" className="glass-panel group rounded-xl overflow-hidden hover:border-emerald-energy transition-all block">
-                      <div className="h-32 bg-gray-900 relative">
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <MdLiveTv className="text-4xl text-gray-700 group-hover:text-emerald-energy transition-colors" />
-                        </div>
-                        <span className="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
-                          {arch.duration}
-                        </span>
-                      </div>
-                      <div className="p-4">
-                        <h3 className="font-bold text-white line-clamp-1 mb-1">{arch.title}</h3>
-                        <span className="text-xs text-white/40">
-                          {format(new Date(arch.created_at), 'PPP', { locale: language === 'ar' ? ar : language === 'tr' ? tr : enUS })}
-                        </span>
-                      </div>
-                    </a>
-                  ))}
-                </div>
-              </div>
-            )}
-
             {/* Latest News / Posts */}
             <div>
               <div className="flex items-center gap-3 mb-8">
@@ -182,9 +146,14 @@ export default function HomePage() {
             </div>
           </div>
 
+
+          {/* Instagram Feed */}
+          <div className="lg:col-span-4 mt-8">
+            <InstagramFeed />
+          </div>
+
         </div>
       </div>
-
     </Layout>
   );
 }

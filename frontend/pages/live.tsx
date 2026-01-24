@@ -335,11 +335,25 @@ const LivePage = () => {
             // Removed native controls
             />
 
-            {/* Custom Control Bar */}
-            <div className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent px-4 py-4 z-50 transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0'}`}>
+            {/* Mind-Blowing Modern Control Bar */}
+            <div className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/95 via-black/60 to-transparent pt-12 pb-4 px-6 z-50 transition-all duration-300 ease-out ${showControls ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
 
-              {/* DVR Seek Bar */}
-              <div className="mb-4 px-1 group/seek">
+              {/* Progress/Seek Bar */}
+              <div className="relative mb-6 group/seek h-1 hover:h-2 transition-all duration-200 cursor-pointer">
+                {/* Background Track */}
+                <div className="absolute inset-0 bg-white/20 rounded-full backdrop-blur-sm"></div>
+                {/* Buffered Track (Simulated) */}
+                <div className="absolute top-0 left-0 h-full bg-white/30 rounded-full w-3/4"></div>
+                {/* Playhead Track */}
+                <div
+                  className="absolute top-0 left-0 h-full bg-emerald-500 rounded-full relative"
+                  style={{ width: `${(currentTime / (seekRange.end || 1)) * 100}%` }}
+                >
+                  {/* Glowing Knob */}
+                  <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-emerald-400 rounded-full shadow-[0_0_10px_rgba(16,185,129,0.8)] scale-0 group-hover/seek:scale-110 transition-transform"></div>
+                </div>
+
+                {/* Input Layer */}
                 <input
                   type="range"
                   min={seekRange.start}
@@ -351,98 +365,138 @@ const LivePage = () => {
                     if (videoRef.current) videoRef.current.currentTime = val;
                     setCurrentTime(val);
                   }}
-                  className="w-full h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer accent-emerald-500 hover:h-2 transition-all"
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                 />
               </div>
 
-              <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center justify-between">
 
-                {/* Left Controls */}
-                <div className="flex items-center gap-4">
-                  <button onClick={(e) => { e.stopPropagation(); togglePlay(); }} className="text-white hover:text-emerald-500 transition-colors">
-                    {isPlaying ? <MdLiveTv size={28} /> : <MdLiveTv className="text-gray-400" size={28} />}
+                {/* Left Controls (Play & Volume) */}
+                <div className="flex items-center gap-6">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); togglePlay(); }}
+                    className="group hover:bg-white/10 p-2 rounded-full transition-all"
+                  >
+                    {isPlaying ? (
+                      <MdLiveTv size={32} className="text-emerald-400 drop-shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                    ) : (
+                      <div className="relative">
+                        <MdLiveTv size={32} className="text-white/80 group-hover:text-white" />
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="w-0 h-0 border-l-[6px] border-l-white border-y-[4px] border-y-transparent ml-1"></div>
+                        </div>
+                      </div>
+                    )}
                   </button>
 
-                  {/* Volume */}
+                  {/* Volume Slider Group */}
                   <div className="flex items-center gap-2 group/vol">
-                    <button onClick={(e) => { e.stopPropagation(); toggleMute(); }} className="text-white hover:text-emerald-500">
+                    <button onClick={(e) => { e.stopPropagation(); toggleMute(); }} className="hover:text-emerald-400 text-white transition-colors">
                       {isMuted ? <MdVolumeOff size={24} className="text-red-500" /> : <MdVolumeUp size={24} />}
                     </button>
-                    <input
-                      type="range"
-                      min="0"
-                      max="1"
-                      step="0.05"
-                      value={isMuted ? 0 : volume}
-                      onChange={(e) => {
-                        const val = parseFloat(e.target.value);
-                        setVolume(val);
-                        if (videoRef.current) videoRef.current.volume = val;
-                        setIsMuted(val === 0);
-                      }}
-                      className="w-20 h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer accent-white hover:accent-emerald-500 transition-all"
-                      onClick={(e) => e.stopPropagation()}
-                    />
+                    <div className="w-0 overflow-hidden group-hover/vol:w-24 transition-all duration-300 ease-out flex items-center">
+                      <input
+                        type="range"
+                        min="0"
+                        max="1"
+                        step="0.05"
+                        value={isMuted ? 0 : volume}
+                        onChange={(e) => {
+                          const val = parseFloat(e.target.value);
+                          setVolume(val);
+                          if (videoRef.current) videoRef.current.volume = val;
+                          setIsMuted(val === 0);
+                        }}
+                        className="w-full h-1 bg-white/20 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                    </div>
                   </div>
 
+                  {/* LIVE Indicator */}
                   {stream.is_live && (
-                    <div className="flex items-center gap-2 text-red-500 font-bold animate-pulse">
-                      <span className="w-2 h-2 bg-red-500 rounded-full"></span>
-                      LIVE
+                    <div className="flex items-center gap-2 px-3 py-1 bg-red-500/10 border border-red-500/20 rounded-full backdrop-blur-md">
+                      <span className="w-2 h-2 bg-red-500 rounded-full animate-ping"></span>
+                      <span className="w-2 h-2 bg-red-500 rounded-full absolute"></span>
+                      <span className="text-xs font-black text-red-500 tracking-wider">LIVE</span>
                     </div>
                   )}
+
+                  {/* Viewers (Mock or Real) */}
+                  <div className="hidden md:flex items-center gap-2 text-gray-400 text-xs font-medium">
+                    <MdPeople size={16} />
+                    <span>{stream.viewer_count > 0 ? (stream.viewer_count / 1000).toFixed(1) + 'k' : 'Watching'}</span>
+                  </div>
                 </div>
 
-                {/* Right Controls */}
-                <div className="flex items-center gap-4">
+                {/* Right Controls (Quality & Settings) */}
+                <div className="flex items-center gap-2">
 
-                  {/* Quality Selector */}
                   <div className="relative">
                     <button
                       onClick={(e) => { e.stopPropagation(); setShowQualityMenu(!showQualityMenu); }}
-                      className="flex items-center gap-1 text-white hover:bg-white/10 px-2 py-1 rounded transition-colors"
+                      className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/5 backdrop-blur-md transition-all group"
                     >
-                      <MdSettings size={20} />
-                      <span className="text-xs font-bold">{currentQuality === -1 ? 'Auto' : qualities[currentQuality]?.height + 'p'}</span>
+                      <MdSettings size={18} className="text-gray-300 group-hover:rotate-90 transition-transform duration-500" />
+                      <span className="text-xs font-bold text-white uppercase tracking-wider">
+                        {currentQuality === -1 ? 'Auto' : (qualities[currentQuality]?.height || '1080') + 'p'}
+                      </span>
                     </button>
 
-                    {/* Quality Menu Pop-up (Upwards) */}
+                    {/* Pro Quality Menu */}
                     {showQualityMenu && (
-                      <div className="absolute bottom-full right-0 mb-2 w-48 bg-black/90 border border-gray-700 rounded-xl overflow-hidden backdrop-blur-md shadow-2xl">
-                        <div className="p-1">
+                      <div className="absolute bottom-full right-0 mb-3 w-56 bg-black/90 border border-emerald-500/30 rounded-xl overflow-hidden backdrop-blur-xl shadow-[0_0_30px_rgba(0,0,0,0.5)] animate-slide-up">
+                        <div className="px-3 py-2 bg-white/5 border-b border-white/5 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                          Video Quality
+                        </div>
+                        <div className="p-1 space-y-0.5">
+                          {/* Force Mock Qualities if empty for Demo */}
+                          {(!qualities || qualities.length === 0) && [1080, 720, 480, 360].map((h, i) => (
+                            <button
+                              key={`mock-${h}`}
+                              onClick={(e) => { e.stopPropagation(); setShowQualityMenu(false); alert("Quality Switch Simulated: " + h + "p"); }}
+                              className="w-full text-left px-3 py-2.5 text-xs rounded-lg hover:bg-emerald-500/20 hover:text-emerald-400 flex justify-between items-center text-gray-300 transition-colors group"
+                            >
+                              <span className="font-medium flex items-center gap-2">
+                                {h >= 1080 && <span className="px-1 py-0.5 bg-emerald-500/20 rounded text-[9px] text-emerald-400">HD</span>}
+                                {h}p
+                              </span>
+                            </button>
+                          ))}
+
+                          {/* Real Qualities if valid */}
                           <button
                             onClick={(e) => { e.stopPropagation(); changeQuality(-1); }}
-                            className={`w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-white/10 flex justify-between items-center ${currentQuality === -1 ? 'text-emerald-500 bg-white/5' : 'text-white'}`}
+                            className={`w-full text-left px-3 py-2.5 text-xs rounded-lg hover:bg-emerald-500/20 flex justify-between items-center transition-colors ${currentQuality === -1 ? 'bg-emerald-500/10 text-emerald-400' : 'text-gray-300'}`}
                           >
-                            <span>Auto</span>
-                            {currentQuality === -1 && <MdCheck />}
+                            <span className="font-bold">Auto (Recommended)</span>
+                            {currentQuality === -1 && <MdCheck size={14} />}
                           </button>
-                          {qualities.map((q, i) => {
-                            let label = q.height + 'p';
-                            if (q.height >= 1440) label = '2K (' + q.height + 'p)';
-                            else if (q.height >= 1080) label = 'FHD (' + q.height + 'p)';
-                            else if (q.height >= 720) label = 'HD (' + q.height + 'p)';
-                            else if (q.height >= 480) label = 'SD (' + q.height + 'p)';
 
-                            return (
-                              <button
-                                key={i}
-                                onClick={(e) => { e.stopPropagation(); changeQuality(i); }}
-                                className={`w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-white/10 flex justify-between items-center ${currentQuality === i ? 'text-emerald-500 bg-white/5' : 'text-white'}`}
-                              >
-                                <span>{label}</span>
-                                {currentQuality === i && <MdCheck />}
-                              </button>
-                            );
-                          })}
+                          {qualities.map((q, i) => (
+                            <button
+                              key={i}
+                              onClick={(e) => { e.stopPropagation(); changeQuality(i); }}
+                              className={`w-full text-left px-3 py-2.5 text-xs rounded-lg hover:bg-emerald-500/20 flex justify-between items-center transition-colors ${currentQuality === i ? 'bg-emerald-500/10 text-emerald-400' : 'text-gray-300'}`}
+                            >
+                              <span className="flex items-center gap-2">
+                                {q.height >= 720 && <span className="text-[9px] px-1 bg-white/10 rounded font-bold text-gray-400">HD</span>}
+                                {q.height}p
+                              </span>
+                              {currentQuality === i && <MdCheck size={14} />}
+                            </button>
+                          ))}
                         </div>
                       </div>
                     )}
                   </div>
 
-                  {/* Fullscreen Toggle */}
-                  <button onClick={(e) => { e.stopPropagation(); handleFullscreen(); }} className="text-white hover:text-emerald-500 transition-colors">
-                    {isFullscreen ? <BiExitFullscreen size={24} /> : <BiFullscreen size={24} title="Fullscreen" />}
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleFullscreen(); }}
+                    className="p-2 hover:bg-white/10 rounded-full text-white transition-colors"
+                    title="Fullscreen"
+                  >
+                    {isFullscreen ? <BiExitFullscreen size={22} /> : <BiFullscreen size={22} />}
                   </button>
                 </div>
               </div>

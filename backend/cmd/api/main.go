@@ -111,7 +111,20 @@ func main() {
 		api.POST("/ads", handlers.CreateAd)
 		api.PUT("/ads/:id", handlers.UpdateAd)
 		api.DELETE("/ads/:id", handlers.DeleteAd)
+
+		// Settings & SEO
+		api.GET("/settings", handlers.GetSettings)
+		api.POST("/settings", handlers.UpdateSettings)
+		api.GET("/instagram", handlers.GetInstagramFeed)
+
+		// SEO Tools
+		api.GET("/seo/audit", handlers.AuditPage)
+		api.GET("/seo/backlink-check", handlers.CheckBacklink)
 	}
+
+	// Sitemap (Outside API group for root access if proxied, but backend usually serves via API)
+	// We will serve it at /api/sitemap.xml and let frontend proxy it or next.js render it.
+	r.GET("/sitemap.xml", handlers.GenerateSitemap)
 
 	log.Println("HTTP Server starting on :8080")
 	if err := r.Run(":8080"); err != nil {
