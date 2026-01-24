@@ -27,6 +27,7 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, icon: Icon, color, su
 );
 
 const AdminDashboard = () => {
+    // v2.1.0 - Clean Build
     const [isLive, setIsLive] = useState(false);
     const [stats, setStats] = useState({
         system: { cpu_usage: 0, ram_usage: 0, go_routines: 0, active_users: 0, viewer_count: 0 },
