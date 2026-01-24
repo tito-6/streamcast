@@ -39,7 +39,7 @@ const Layout: React.FC<LayoutProps> = ({
         <meta property="og:site_name" content="Sport Events" />
         <meta property="og:title" content={title} />
         <meta property="og:description" content={description} />
-        <meta property="og:image" content="https://sportevent.online/og-image.jpg" />
+        <meta property="og:image" content="https://sportevent.online/og-social-share.jpg" />
         <meta property="og:url" content="https://sportevent.online" />
         <meta property="og:locale" content={lang === 'ar' ? 'ar_AE' : 'en_US'} />
 
@@ -47,7 +47,7 @@ const Layout: React.FC<LayoutProps> = ({
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={title} />
         <meta name="twitter:description" content={description} />
-        <meta name="twitter:image" content="https://sportevent.online/og-image.jpg" />
+        <meta name="twitter:image" content="https://sportevent.online/og-social-share.jpg" />
       </Head>
 
       {/* Google Analytics */}

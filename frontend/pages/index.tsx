@@ -30,6 +30,15 @@ export default function HomePage() {
   const [status, setStatus] = useState<StreamStatus | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [archives, setArchives] = useState<any[]>([]);
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  useEffect(() => {
+    if (posts.length === 0) return;
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % posts.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [posts.length]);
 
   useEffect(() => {
     async function fetchData() {
@@ -143,33 +152,33 @@ export default function HomePage() {
 
             {/* Latest News / Posts */}
             <div>
-              <div className="flex items-center gap-3 mb-8">
-                <MdArticle className="text-3xl text-emerald-energy" />
-                <h2 className="text-3xl font-bold text-white">
-                  {t.lastNews}
-                </h2>
-              </div>
-
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {posts.map(post => (
-                  <Link key={post.id} href={`/posts/${post.id}`} className="glass-panel group rounded-xl overflow-hidden hover:border-emerald-energy transition-all block">
-                    <div className="h-48 bg-gray-800 overflow-hidden relative">
-                      <img
-                        src={getImageUrl(post.image_url) || 'https://via.placeholder.com/400'}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                        alt={language === 'ar' ? post.title_ar : post.title_en}
-                      />
-                    </div>
-                    <div className="p-6">
-                      <h3 className="text-xl font-bold text-white mb-3 group-hover:text-emerald-energy transition-colors">
+              {/* News Carousel */}
+              <div className="relative overflow-hidden rounded-2xl glass-panel group h-[400px]">
+                {posts.map((post, index) => (
+                  <div
+                    key={post.id}
+                    className={`absolute inset-0 transition-opacity duration-1000 ${index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
+                  >
+                    <img
+                      src={getImageUrl(post.image_url) || 'https://via.placeholder.com/800x400'}
+                      alt={language === 'ar' ? post.title_ar : post.title_en}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent flex flex-col justify-end p-8">
+                      <span className="text-emerald-400 font-bold mb-2 uppercase tracking-wider text-sm">
+                        {t.lastNews}
+                      </span>
+                      <h2 className="text-2xl md:text-4xl font-bold text-white mb-4 leading-tight">
                         {language === 'ar' ? post.title_ar : language === 'tr' ? post.title_tr : post.title_en}
-                      </h3>
-                      <p className="text-white/60 text-sm line-clamp-3 mb-4">
-                        {language === 'ar' ? post.content_ar : language === 'tr' ? post.content_tr : post.content_en}
-                      </p>
+                      </h2>
+                      <Link href={`/live`} className="btn-primary w-fit flex items-center gap-2">
+                        <MdLiveTv /> {language === 'ar' ? 'شاهد البث المباشر' : 'Watch Live Stream'}
+                      </Link>
                     </div>
-                  </Link>
+                  </div>
                 ))}
+
+                {/* Carousel Controls (Hidden but auto works) */}
               </div>
             </div>
           </div>
