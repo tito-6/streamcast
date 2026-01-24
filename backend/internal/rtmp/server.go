@@ -77,8 +77,8 @@ func NewRtmpServer(port string) *Server {
 
 			// Stream 0: 1080p (Full HD)
 			"-map", "[v1080]", "-map", "0:a",
-			"-c:v:0", "libx264", "-b:v:0", "3500k", "-maxrate:v:0", "3500k", "-bufsize:v:0", "7000k",
-			"-preset", "ultrafast", "-tune", "zerolatency", "-g", "60", "-keyint_min", "60", "-sc_threshold", "0", "-r", "30",
+			"-c:v:0", "libx264", "-b:v:0", "6000k", "-maxrate:v:0", "6500k", "-bufsize:v:0", "12000k",
+			"-preset", "superfast", "-tune", "zerolatency", "-profile:v:0", "high", "-g", "60", "-keyint_min", "60", "-sc_threshold", "0", "-r", "30",
 			"-c:a:0", "aac", "-b:a:0", "192k", "-ac", "2", "-ar", "44100",
 
 			// Stream 1: 720p (HD)
