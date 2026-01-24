@@ -4,6 +4,7 @@ import Script from 'next/script';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import AdSpace from './AdSpace';
+import ConsentBanner from './ConsentBanner';
 
 interface LayoutProps {
   children: ReactNode;
@@ -88,6 +89,7 @@ const Layout: React.FC<LayoutProps> = ({
           </div>
         </div>
         <Footer />
+        <ConsentBanner language={lang} />
       </div>
     </>
   );

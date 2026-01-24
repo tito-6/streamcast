@@ -69,7 +69,13 @@ const Footer = () => {
                 </div>
 
                 <div className="border-t border-gray-800 pt-8 text-center text-gray-500 text-sm">
-                    <p>© {new Date().getFullYear()} Event 01s. {t.allRightsReserved}</p>
+                    <p className="mb-4">© {new Date().getFullYear()} Sport Events. {t.allRightsReserved}</p>
+                    <div className="flex justify-center gap-6">
+                        <a href="/about" className="hover:text-emerald-400 transition-colors">{language === 'ar' ? 'من نحن' : 'About Us'}</a>
+                        <a href="/privacy" className="hover:text-emerald-400 transition-colors">{language === 'ar' ? 'الخصوصية' : 'Privacy'}</a>
+                        <a href="/terms" className="hover:text-emerald-400 transition-colors">{language === 'ar' ? 'الشروط' : 'Terms'}</a>
+                        <a href="/contact" className="hover:text-emerald-400 transition-colors">{language === 'ar' ? 'اتصل بنا' : 'Contact'}</a>
+                    </div>
                 </div>
             </div>
         </footer>
