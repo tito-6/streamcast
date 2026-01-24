@@ -407,16 +407,24 @@ const LivePage = () => {
                             <span>Auto</span>
                             {currentQuality === -1 && <MdCheck />}
                           </button>
-                          {qualities.map((q, i) => (
-                            <button
-                              key={i}
-                              onClick={(e) => { e.stopPropagation(); changeQuality(i); }}
-                              className={`w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-white/10 flex justify-between items-center ${currentQuality === i ? 'text-emerald-500 bg-white/5' : 'text-white'}`}
-                            >
-                              <span>{q.height}p</span>
-                              {currentQuality === i && <MdCheck />}
-                            </button>
-                          ))}
+                          {qualities.map((q, i) => {
+                            let label = q.height + 'p';
+                            if (q.height >= 1440) label = '2K (' + q.height + 'p)';
+                            else if (q.height >= 1080) label = 'FHD (' + q.height + 'p)';
+                            else if (q.height >= 720) label = 'HD (' + q.height + 'p)';
+                            else if (q.height >= 480) label = 'SD (' + q.height + 'p)';
+
+                            return (
+                              <button
+                                key={i}
+                                onClick={(e) => { e.stopPropagation(); changeQuality(i); }}
+                                className={`w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-white/10 flex justify-between items-center ${currentQuality === i ? 'text-emerald-500 bg-white/5' : 'text-white'}`}
+                              >
+                                <span>{label}</span>
+                                {currentQuality === i && <MdCheck />}
+                              </button>
+                            );
+                          })}
                         </div>
                       </div>
                     )}

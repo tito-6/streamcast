@@ -72,39 +72,45 @@ func NewRtmpServer(port string) *Server {
 			"-y",
 			"-i", rtmpUrl,
 
-			// HLS Configuration (4 Qualities: 1080p, 720p, 480p, 240p)
-			"-filter_complex", "[0:v]split=4[v1][v2][v3][v4];[v1]scale=w=1920:h=1080[v1080];[v2]scale=w=1280:h=720[v720];[v3]scale=w=854:h=480[v480];[v4]scale=w=426:h=240[v240]",
+			// HLS Configuration (5 Qualities: 2K, 1080p, 720p, 480p, 240p)
+			"-filter_complex", "[0:v]split=5[v1][v2][v3][v4][v5];[v1]scale=w=2560:h=1440[v1440];[v2]scale=w=1920:h=1080[v1080];[v3]scale=w=1280:h=720[v720];[v4]scale=w=854:h=480[v480];[v5]scale=w=426:h=240[v240]",
 
-			// Stream 0: 1080p (Full HD)
-			"-map", "[v1080]", "-map", "0:a",
-			"-c:v:0", "libx264", "-b:v:0", "6000k", "-maxrate:v:0", "6500k", "-bufsize:v:0", "12000k",
+			// Stream 0: 2K (1440p)
+			"-map", "[v1440]", "-map", "0:a",
+			"-c:v:0", "libx264", "-b:v:0", "8000k", "-maxrate:v:0", "8500k", "-bufsize:v:0", "16000k",
 			"-preset", "superfast", "-tune", "zerolatency", "-profile:v:0", "high", "-g", "60", "-keyint_min", "60", "-sc_threshold", "0", "-r", "30",
-			"-c:a:0", "aac", "-b:a:0", "192k", "-ac", "2", "-ar", "44100",
+			"-c:a:0", "aac", "-b:a:0", "256k", "-ac", "2", "-ar", "44100",
 
-			// Stream 1: 720p (HD)
+			// Stream 1: 1080p (Full HD)
+			"-map", "[v1080]", "-map", "0:a",
+			"-c:v:1", "libx264", "-b:v:1", "5000k", "-maxrate:v:1", "5500k", "-bufsize:v:1", "10000k",
+			"-preset", "superfast", "-tune", "zerolatency", "-profile:v:1", "high", "-g", "60", "-keyint_min", "60", "-sc_threshold", "0", "-r", "30",
+			"-c:a:1", "aac", "-b:a:1", "192k", "-ac", "2", "-ar", "44100",
+
+			// Stream 2: 720p (HD)
 			"-map", "[v720]", "-map", "0:a",
-			"-c:v:1", "libx264", "-b:v:1", "2000k", "-maxrate:v:1", "2000k", "-bufsize:v:1", "4000k",
-			"-preset", "ultrafast", "-tune", "zerolatency", "-g", "60", "-keyint_min", "60", "-sc_threshold", "0", "-r", "30",
-			"-c:a:1", "aac", "-b:a:1", "128k", "-ac", "2", "-ar", "44100",
+			"-c:v:2", "libx264", "-b:v:2", "2500k", "-maxrate:v:2", "2500k", "-bufsize:v:2", "5000k",
+			"-preset", "superfast", "-tune", "zerolatency", "-g", "60", "-keyint_min", "60", "-sc_threshold", "0", "-r", "30",
+			"-c:a:2", "aac", "-b:a:2", "128k", "-ac", "2", "-ar", "44100",
 
-			// Stream 2: 480p (SD)
+			// Stream 3: 480p (SD)
 			"-map", "[v480]", "-map", "0:a",
-			"-c:v:2", "libx264", "-b:v:2", "1000k", "-maxrate:v:2", "1000k", "-bufsize:v:2", "2000k",
-			"-preset", "ultrafast", "-tune", "zerolatency", "-g", "60", "-keyint_min", "60", "-sc_threshold", "0", "-r", "30",
-			"-c:a:2", "aac", "-b:a:2", "96k", "-ac", "2", "-ar", "44100",
+			"-c:v:3", "libx264", "-b:v:3", "1000k", "-maxrate:v:3", "1000k", "-bufsize:v:3", "2000k",
+			"-preset", "superfast", "-tune", "zerolatency", "-g", "60", "-keyint_min", "60", "-sc_threshold", "0", "-r", "30",
+			"-c:a:3", "aac", "-b:a:3", "96k", "-ac", "2", "-ar", "44100",
 
-			// Stream 3: 240p (Low Bandwidth)
+			// Stream 4: 240p (Low Bandwidth)
 			"-map", "[v240]", "-map", "0:a",
-			"-c:v:3", "libx264", "-b:v:3", "400k", "-maxrate:v:3", "400k", "-bufsize:v:3", "800k",
-			"-preset", "ultrafast", "-tune", "zerolatency", "-g", "60", "-keyint_min", "60", "-sc_threshold", "0", "-r", "30",
-			"-c:a:3", "aac", "-b:a:3", "64k", "-ac", "2", "-ar", "44100",
+			"-c:v:4", "libx264", "-b:v:4", "400k", "-maxrate:v:4", "400k", "-bufsize:v:4", "800k",
+			"-preset", "superfast", "-tune", "zerolatency", "-g", "60", "-keyint_min", "60", "-sc_threshold", "0", "-r", "30",
+			"-c:a:4", "aac", "-b:a:4", "64k", "-ac", "2", "-ar", "44100",
 
 			// HLS Output settings
 			"-f", "hls",
 			"-hls_time", "2",
 			"-hls_list_size", "6",
 			"-hls_flags", "delete_segments+append_list",
-			"-var_stream_map", "v:0,a:0,name:1080p v:1,a:1,name:720p v:2,a:2,name:480p v:3,a:3,name:240p",
+			"-var_stream_map", "v:0,a:0,name:1440p v:1,a:1,name:1080p v:2,a:2,name:720p v:3,a:3,name:480p v:4,a:4,name:240p",
 			"-master_pl_name", "master.m3u8",
 			"-hls_segment_filename", filepath.Join(hlsDir, "%v/seg_%03d.ts"),
 			filepath.Join(hlsDir, "%v/index.m3u8"),
