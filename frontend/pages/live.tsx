@@ -58,7 +58,7 @@ const LivePage = () => {
               offline_banner_url: liveStream.offline_banner_url,
               pre_match_details: liveStream.pre_match_details,
               post_match_details: liveStream.post_match_details,
-              stream_key: liveStream.stream_key || 'test',
+              stream_key: 'test', // FORCE TEST KEY for now to match OBS
               language: liveStream.language
             });
           }
