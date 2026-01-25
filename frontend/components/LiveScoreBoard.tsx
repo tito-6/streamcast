@@ -342,58 +342,69 @@ export const LiveScoreBoard: React.FC<LiveScoreBoardProps> = ({ globalDate: init
             </div>
 
             {/* 2. FILTER & DATE BAR */}
-            <div className="bg-[#1a1f24] border-b border-white/10 mb-4 z-30 shadow-md">
-                <div className="max-w-[1400px] mx-auto px-4 py-2 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="bg-[#1a1f24] border-b border-white/10 mb-4 z-30 shadow-md sticky top-[57px]">
+                <div className="max-w-[1400px] mx-auto px-4 py-3 space-y-3">
 
-                    {/* Filters */}
-                    <div className="flex items-center gap-1 overflow-x-auto">
-                        {['ALL', 'LIVE', 'ODDS', 'FINISHED', 'SCHEDULED'].map(f => (
-                            <button
-                                key={f}
-                                onClick={() => setFilter(f)}
-                                onTouchEnd={(e) => { e.preventDefault(); setFilter(f); }}
-                                className={`px-3 py-1.5 rounded-md text-[11px] font-bold uppercase tracking-wider transition-all border border-transparent touch-manipulation
-                                    ${filter === f
-                                        ? 'bg-[#3b4046] text-white border-white/10 shadow-sm'
-                                        : 'text-[#9ca3af] hover:bg-[#2a2f35] hover:text-white active:bg-[#2a2f35]'
-                                    }`}
-                            >
-                                {t[f.toLowerCase()] || f}
-                            </button>
-                        ))}
+                    {/* Row 1: Filters + Countries Dropdown */}
+                    <div className="flex items-center justify-between gap-2">
+                        {/* Filters - Scrollable on mobile */}
+                        <div className="flex items-center gap-1 overflow-x-auto flex-1 pb-1 scrollbar-hide">
+                            {['ALL', 'LIVE', 'ODDS', 'FINISHED', 'SCHEDULED'].map(f => (
+                                <button
+                                    key={f}
+                                    onClick={() => setFilter(f)}
+                                    className={`flex-shrink-0 px-3 py-2 rounded-md text-[11px] font-bold uppercase tracking-wider transition-all border border-transparent
+                                        ${filter === f
+                                            ? 'bg-[#3b4046] text-white border-white/10 shadow-sm'
+                                            : 'text-[#9ca3af] hover:bg-[#2a2f35] hover:text-white active:bg-[#2a2f35]'
+                                        }`}
+                                >
+                                    {t[f.toLowerCase()] || f}
+                                </button>
+                            ))}
+                        </div>
+
+                        {/* Countries Dropdown */}
+                        <select
+                            value={selectedCountry || ''}
+                            onChange={(e) => setSelectedCountry(e.target.value || null)}
+                            className="flex-shrink-0 bg-[#2a2f35] text-white text-xs font-bold px-3 py-2 rounded-lg border border-white/10 outline-none cursor-pointer hover:bg-[#3b4046] transition-colors"
+                        >
+                            <option value="">{t.countries}</option>
+                            {countries.map(c => (
+                                <option key={c} value={c}>{c}</option>
+                            ))}
+                        </select>
                     </div>
 
-                    {/* Date Navigation & Picker */}
-                    <div className="flex items-center gap-2 bg-[#2a2f35] p-1 rounded-lg border border-white/5 overflow-x-auto">
+                    {/* Row 2: Date Navigation */}
+                    <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
                         <button
                             onClick={() => setDate('yesterday')}
-                            onTouchEnd={(e) => { e.preventDefault(); setDate('yesterday'); }}
-                            className={`px-3 py-1.5 rounded-md text-[10px] font-bold uppercase transition-colors whitespace-nowrap touch-manipulation ${date === 'yesterday' ? 'bg-[#10b981] text-white shadow-sm' : 'text-gray-400 hover:text-white hover:bg-white/5 active:bg-white/10'}`}
+                            className={`flex-shrink-0 px-4 py-2 rounded-md text-xs font-bold uppercase transition-colors whitespace-nowrap ${date === 'yesterday' ? 'bg-[#10b981] text-white shadow-sm' : 'bg-[#2a2f35] text-gray-400 hover:text-white hover:bg-[#3b4046]'}`}
                         >
                             {t.yesterday}
                         </button>
                         <button
                             onClick={() => setDate('today')}
-                            onTouchEnd={(e) => { e.preventDefault(); setDate('today'); }}
-                            className={`px-3 py-1.5 rounded-md text-[10px] font-bold uppercase transition-colors whitespace-nowrap touch-manipulation ${date === 'today' ? 'bg-[#10b981] text-white shadow-sm' : 'text-gray-400 hover:text-white hover:bg-white/5 active:bg-white/10'}`}
+                            className={`flex-shrink-0 px-4 py-2 rounded-md text-xs font-bold uppercase transition-colors whitespace-nowrap ${date === 'today' ? 'bg-[#10b981] text-white shadow-sm' : 'bg-[#2a2f35] text-gray-400 hover:text-white hover:bg-[#3b4046]'}`}
                         >
                             {t.today}
                         </button>
                         <button
                             onClick={() => setDate('tomorrow')}
-                            onTouchEnd={(e) => { e.preventDefault(); setDate('tomorrow'); }}
-                            className={`px-3 py-1.5 rounded-md text-[10px] font-bold uppercase transition-colors whitespace-nowrap touch-manipulation ${date === 'tomorrow' ? 'bg-[#10b981] text-white shadow-sm' : 'text-gray-400 hover:text-white hover:bg-white/5 active:bg-white/10'}`}
+                            className={`flex-shrink-0 px-4 py-2 rounded-md text-xs font-bold uppercase transition-colors whitespace-nowrap ${date === 'tomorrow' ? 'bg-[#10b981] text-white shadow-sm' : 'bg-[#2a2f35] text-gray-400 hover:text-white hover:bg-[#3b4046]'}`}
                         >
                             {t.tomorrow}
                         </button>
 
-                        <div className="w-px h-4 bg-white/10 mx-1"></div>
+                        <div className="w-px h-6 bg-white/10 mx-1"></div>
 
-                        <div className="relative flex items-center gap-2 px-2">
+                        <div className="relative flex items-center gap-2 px-3 py-2 bg-[#2a2f35] rounded-md flex-shrink-0">
                             <CalendarDays size={14} className="text-[#10b981]" />
                             <input
                                 type="date"
-                                className="bg-transparent text-white text-[10px] font-bold outline-none uppercase cursor-pointer"
+                                className="bg-transparent text-white text-xs font-bold outline-none cursor-pointer w-28"
                                 onChange={(e) => setDate(e.target.value)}
                             />
                         </div>
@@ -402,79 +413,10 @@ export const LiveScoreBoard: React.FC<LiveScoreBoardProps> = ({ globalDate: init
             </div>
 
             {/* 3. MAIN LAYOUT */}
-            <div className="max-w-[1400px] mx-auto px-4 w-full flex flex-col lg:flex-row gap-6 pb-20">
+            <div className="max-w-[1400px] mx-auto px-4 w-full pb-20">
 
-                {/* Mobile Sidebar Toggle */}
-                <button
-                    onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
-                    className="lg:hidden fixed bottom-20 left-4 z-50 bg-[#10b981] text-white p-3 rounded-full shadow-lg"
-                >
-                    <Menu size={24} />
-                </button>
-
-                {/* SIDEBAR (Left) - Mobile Overlay + Desktop */}
-                <div className={`
-                    lg:w-60 flex-shrink-0 flex flex-col gap-4
-                    lg:relative lg:flex
-                    ${mobileSidebarOpen ? 'fixed inset-0 z-40 bg-[#0b0e11] p-4 overflow-y-auto' : 'hidden'}
-                `}>
-                    {/* Mobile Close Button */}
-                    {mobileSidebarOpen && (
-                        <button
-                            onClick={() => setMobileSidebarOpen(false)}
-                            className="lg:hidden absolute top-4 right-4 bg-red-500 text-white p-2 rounded-full"
-                        >
-                            <X size={20} />
-                        </button>
-                    )}
-
-                    {/* Pinned Leagues */}
-                    <div className="bg-[#1a1f24] rounded-lg overflow-hidden border border-white/5">
-                        <div className="p-3 bg-[#23282d] text-[11px] font-bold text-white uppercase flex items-center gap-2 border-b border-white/5">
-                            <Star size={12} className="text-[#10b981]" fill="currentColor" />
-                            Pinned Leagues
-                        </div>
-                        <div className="p-2 space-y-1">
-                            {['Premier League', 'LaLiga', 'Champions League', 'Bundesliga'].map(l => (
-                                <div key={l} className="px-2 py-1.5 text-xs text-gray-400 hover:text-white hover:bg-[#2a2f35] rounded cursor-pointer transition-colors flex items-center justify-between group">
-                                    {l}
-                                    <Star size={10} className="opacity-0 group-hover:opacity-100 text-gray-600" />
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Countries List */}
-                    <div className="bg-[#1a1f24] rounded-lg overflow-hidden border border-white/5 flex-1 relative">
-                        <div className="p-3 bg-[#23282d] text-[11px] font-bold text-white uppercase flex items-center gap-2 border-b border-white/5 sticky top-0 z-10">
-                            <Globe size={12} className="text-gray-400" />
-                            Countries
-                        </div>
-                        <div className="max-h-[600px] overflow-y-auto custom-scrollbar">
-                            {countries.length === 0 && <div className="p-4 text-xs text-gray-500 italic">No leagues available</div>}
-                            {countries.map(c => (
-                                <div
-                                    key={c}
-                                    onClick={() => setSelectedCountry(selectedCountry === c ? null : c)}
-                                    className={`px-4 py-2 border-b border-white/5 text-xs font-medium cursor-pointer transition-colors flex items-center justify-between
-                                        ${selectedCountry === c
-                                            ? 'bg-[#10b981] text-white'
-                                            : 'text-gray-300 hover:bg-[#2a2f35] hover:text-white'
-                                        }`}
-                                >
-                                    <span className="flex items-center gap-2">
-                                        <LeagueIcon country={c} />
-                                        {c}
-                                    </span>
-                                    {selectedCountry === c && <CheckCircle size={12} />}
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-
-                {/* MAIN FEED (Center) */}
-                <div className="flex-1 min-h-[500px]">
+                {/* MAIN FEED */}
+                <div className="min-h-[500px]">
                     {loading && !matches ? (
                         <div className="p-20 flex flex-col items-center justify-center opacity-50">
                             <RefreshCw className="animate-spin text-[#10b981] mb-4" size={32} />
