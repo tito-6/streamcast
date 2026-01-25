@@ -8,8 +8,56 @@ import {
     X, Send, Clock, CheckCircle, Radio, CalendarDays, Shield,
     Gamepad2, Flag as FlagIcon, Target, Crosshair, Bike, Car, Dna,
     Activity, Dumbbell, Club, LocateFixed, MapPin,
-    CircleDot, Shell, Sword, Anchor
+    CircleDot, Shell, Sword, Anchor, Menu
 } from 'lucide-react';
+
+/* --- TRANSLATIONS --- */
+const translations: Record<string, any> = {
+    en: {
+        all: 'ALL', live: 'LIVE', odds: 'ODDS', finished: 'FINISHED', scheduled: 'SCHEDULED',
+        yesterday: 'Yesterday', today: 'Today', tomorrow: 'Tomorrow',
+        countries: 'Countries', pinnedLeagues: 'Pinned Leagues',
+        noMatches: 'No matches found for', filter: 'Filter', resetFilters: 'Reset Filters',
+        loading: 'LOADING', standings: 'Standings', askPrediction: 'Ask me for a prediction...',
+        athenaSportAI: 'Athena Sport AI', observing: "I'm observing the pitch. Ask me anything.",
+        networkError: 'Network error.'
+    },
+    ar: {
+        all: 'الكل', live: 'مباشر', odds: 'احتمالات', finished: 'انتهت', scheduled: 'مجدولة',
+        yesterday: 'أمس', today: 'اليوم', tomorrow: 'غدا',
+        countries: 'الدول', pinnedLeagues: 'الدوريات المفضلة',
+        noMatches: 'لا توجد مباريات لـ', filter: 'تصفية', resetFilters: 'إعادة تعيين الفلاتر',
+        loading: 'جاري التحميل', standings: 'الترتيب', askPrediction: 'اسألني عن توقع...',
+        athenaSportAI: 'أثينا الرياضية AI', observing: 'أراقب الملعب. اسألني أي شيء.',
+        networkError: 'خطأ في الشبكة.'
+    },
+    tr: {
+        all: 'TÜMÜ', live: 'CANLI', odds: 'ORANLAR', finished: 'BİTTİ', scheduled: 'PLANLI',
+        yesterday: 'Dün', today: 'Bugün', tomorrow: 'Yarın',
+        countries: 'Ülkeler', pinnedLeagues: 'Favori Ligler',
+        noMatches: 'Maç bulunamadı', filter: 'Filtre', resetFilters: 'Filtreleri Sıfırla',
+        loading: 'YÜKLENİYOR', standings: 'Puan Durumu', askPrediction: 'Tahmin sor...',
+        athenaSportAI: 'Athena Spor AI', observing: 'Sahayı izliyorum. Bana sor.',
+        networkError: 'Ağ hatası.'
+    }
+};
+
+/* --- TIMEZONE CONVERSION --- */
+const convertToIstanbulTime = (timeStr: string): string => {
+    // If it's a time like "15:30", convert from UTC to Istanbul (UTC+3)
+    if (/^\d{1,2}:\d{2}$/.test(timeStr)) {
+        const [hours, minutes] = timeStr.split(':').map(Number);
+        const utcDate = new Date();
+        utcDate.setUTCHours(hours, minutes, 0, 0);
+
+        // Convert to Istanbul time (UTC+3)
+        const istanbulDate = new Date(utcDate.getTime() + (3 * 60 * 60 * 1000));
+        const istHours = istanbulDate.getUTCHours().toString().padStart(2, '0');
+        const istMinutes = istanbulDate.getUTCMinutes().toString().padStart(2, '0');
+        return `${istHours}:${istMinutes}`;
+    }
+    return timeStr;
+};
 
 /* --- ICONS MAPPING --- */
 const SportIcons: Record<string, React.ReactNode> = {
@@ -159,6 +207,7 @@ const SPORTS = [
 export const LiveScoreBoard: React.FC<LiveScoreBoardProps> = ({ globalDate: initialDate }) => {
     const { language } = useLanguage();
     const ENGINE_URL = "/api/sports-engine";
+    const t = translations[language] || translations.en;
 
     // --- State ---
     const [sport, setSport] = useState('football');
@@ -169,6 +218,7 @@ export const LiveScoreBoard: React.FC<LiveScoreBoardProps> = ({ globalDate: init
     const [matches, setMatches] = useState<LeagueGroup[] | null>(null);
     const [loading, setLoading] = useState(true);
     const [datePickerOpen, setDatePickerOpen] = useState(false);
+    const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
     // Chat
     const [chatOpen, setChatOpen] = useState(false);
@@ -299,13 +349,14 @@ export const LiveScoreBoard: React.FC<LiveScoreBoardProps> = ({ globalDate: init
                             <button
                                 key={f}
                                 onClick={() => setFilter(f)}
-                                className={`px-3 py-1.5 rounded-md text-[11px] font-bold uppercase tracking-wider transition-all border border-transparent
+                                onTouchEnd={(e) => { e.preventDefault(); setFilter(f); }}
+                                className={`px-3 py-1.5 rounded-md text-[11px] font-bold uppercase tracking-wider transition-all border border-transparent touch-manipulation
                                     ${filter === f
                                         ? 'bg-[#3b4046] text-white border-white/10 shadow-sm'
-                                        : 'text-[#9ca3af] hover:bg-[#2a2f35] hover:text-white'
+                                        : 'text-[#9ca3af] hover:bg-[#2a2f35] hover:text-white active:bg-[#2a2f35]'
                                     }`}
                             >
-                                {f}
+                                {t[f.toLowerCase()] || f}
                             </button>
                         ))}
                     </div>
@@ -314,21 +365,24 @@ export const LiveScoreBoard: React.FC<LiveScoreBoardProps> = ({ globalDate: init
                     <div className="flex items-center gap-2 bg-[#2a2f35] p-1 rounded-lg border border-white/5 overflow-x-auto">
                         <button
                             onClick={() => setDate('yesterday')}
-                            className={`px-3 py-1.5 rounded-md text-[10px] font-bold uppercase transition-colors whitespace-nowrap ${date === 'yesterday' ? 'bg-[#10b981] text-white shadow-sm' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
+                            onTouchEnd={(e) => { e.preventDefault(); setDate('yesterday'); }}
+                            className={`px-3 py-1.5 rounded-md text-[10px] font-bold uppercase transition-colors whitespace-nowrap touch-manipulation ${date === 'yesterday' ? 'bg-[#10b981] text-white shadow-sm' : 'text-gray-400 hover:text-white hover:bg-white/5 active:bg-white/10'}`}
                         >
-                            Yesterday
+                            {t.yesterday}
                         </button>
                         <button
                             onClick={() => setDate('today')}
-                            className={`px-3 py-1.5 rounded-md text-[10px] font-bold uppercase transition-colors whitespace-nowrap ${date === 'today' ? 'bg-[#10b981] text-white shadow-sm' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
+                            onTouchEnd={(e) => { e.preventDefault(); setDate('today'); }}
+                            className={`px-3 py-1.5 rounded-md text-[10px] font-bold uppercase transition-colors whitespace-nowrap touch-manipulation ${date === 'today' ? 'bg-[#10b981] text-white shadow-sm' : 'text-gray-400 hover:text-white hover:bg-white/5 active:bg-white/10'}`}
                         >
-                            Today
+                            {t.today}
                         </button>
                         <button
                             onClick={() => setDate('tomorrow')}
-                            className={`px-3 py-1.5 rounded-md text-[10px] font-bold uppercase transition-colors whitespace-nowrap ${date === 'tomorrow' ? 'bg-[#10b981] text-white shadow-sm' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
+                            onTouchEnd={(e) => { e.preventDefault(); setDate('tomorrow'); }}
+                            className={`px-3 py-1.5 rounded-md text-[10px] font-bold uppercase transition-colors whitespace-nowrap touch-manipulation ${date === 'tomorrow' ? 'bg-[#10b981] text-white shadow-sm' : 'text-gray-400 hover:text-white hover:bg-white/5 active:bg-white/10'}`}
                         >
-                            Tomorrow
+                            {t.tomorrow}
                         </button>
 
                         <div className="w-px h-4 bg-white/10 mx-1"></div>
@@ -348,8 +402,29 @@ export const LiveScoreBoard: React.FC<LiveScoreBoardProps> = ({ globalDate: init
             {/* 3. MAIN LAYOUT */}
             <div className="max-w-[1400px] mx-auto px-4 w-full flex flex-col lg:flex-row gap-6 pb-20">
 
-                {/* SIDEBAR (Left) */}
-                <div className="lg:w-60 flex-shrink-0 flex flex-col gap-4 hidden lg:flex">
+                {/* Mobile Sidebar Toggle */}
+                <button
+                    onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
+                    className="lg:hidden fixed bottom-20 left-4 z-50 bg-[#10b981] text-white p-3 rounded-full shadow-lg"
+                >
+                    <Menu size={24} />
+                </button>
+
+                {/* SIDEBAR (Left) - Mobile Overlay + Desktop */}
+                <div className={`
+                    lg:w-60 flex-shrink-0 flex flex-col gap-4
+                    lg:relative lg:flex
+                    ${mobileSidebarOpen ? 'fixed inset-0 z-40 bg-[#0b0e11] p-4 overflow-y-auto' : 'hidden'}
+                `}>
+                    {/* Mobile Close Button */}
+                    {mobileSidebarOpen && (
+                        <button
+                            onClick={() => setMobileSidebarOpen(false)}
+                            className="lg:hidden absolute top-4 right-4 bg-red-500 text-white p-2 rounded-full"
+                        >
+                            <X size={20} />
+                        </button>
+                    )}
 
                     {/* Pinned Leagues */}
                     <div className="bg-[#1a1f24] rounded-lg overflow-hidden border border-white/5">
@@ -445,7 +520,7 @@ export const LiveScoreBoard: React.FC<LiveScoreBoardProps> = ({ globalDate: init
                                                     ) : match.status === 'FINISHED' ? (
                                                         <span className="text-xs font-bold text-gray-500">FT</span>
                                                     ) : (
-                                                        <span className="text-xs font-bold text-gray-400">{match.time}</span>
+                                                        <span className="text-xs font-bold text-gray-400">{convertToIstanbulTime(match.time)}</span>
                                                     )}
                                                 </div>
 

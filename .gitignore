@@ -12,3 +12,14 @@ backend/uploads/
 *.exe
 backend/main
 frontend/out/
+
+# SSH Keys and Sensitive Files
+*.pem
+*.key
+id_*
+*.pub
+.ssh/
+*.ppk
+.env.local
+.env.production
+*.secret
