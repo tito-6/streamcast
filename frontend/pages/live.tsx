@@ -25,7 +25,7 @@ const LivePage = () => {
     description: "The biggest event of the year is live now! Watch the top teams compete for glory.",
     is_live: false,
     viewer_count: 0,
-    stream_key: 'test' // Default to 'test' key
+    stream_key: 'live_42a01020-3041-420b-b180-4f7ced842dc4' // Default to user key
   });
   const [loading, setLoading] = useState(true);
 
@@ -58,7 +58,7 @@ const LivePage = () => {
               offline_banner_url: liveStream.offline_banner_url,
               pre_match_details: liveStream.pre_match_details,
               post_match_details: liveStream.post_match_details,
-              stream_key: 'test', // FORCE TEST KEY for now to match OBS
+              stream_key: 'live_42a01020-3041-420b-b180-4f7ced842dc4', // User provided key
               language: liveStream.language
             });
           }

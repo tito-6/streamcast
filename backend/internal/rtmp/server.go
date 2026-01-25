@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"streamcast-backend/internal/models"
+	"strings"
 	"sync"
 	"time"
 
@@ -39,9 +40,15 @@ func NewRtmpServer(port string) *Server {
 		log.Println("Stream Key/Path:", conn.URL.Path)
 
 		// 1. Prepare Directory Structure (HLS Scaffolding)
-		// FORCE 'test' key to match frontend hardcoding
-		// irrespective of what OBS sends.
-		streamKey := "test"
+		// Extract Stream Key from URL (e.g., /live/test -> test)
+		path := strings.TrimPrefix(conn.URL.Path, "/")
+		parts := strings.Split(path, "/")
+		streamKey := parts[len(parts)-1]
+		if streamKey == "" {
+			streamKey = "test"
+		}
+
+		log.Printf("Inferred Stream Key: %s", streamKey)
 
 		hlsDir := filepath.Join("/var/www/hls", streamKey)
 
