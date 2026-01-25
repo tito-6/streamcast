@@ -90,7 +90,7 @@ const SportsWidget: React.FC<SportsWidgetProps> = ({ league, globalDate }) => {
     const [loading, setLoading] = useState(true);
     const [imgError, setImgError] = useState<Record<string, boolean>>({});
 
-    const ENGINE_URL = "http://localhost:8001";
+    const ENGINE_URL = "/api/sports-engine";
 
     const fetchData = async () => {
         setLoading(true);
@@ -382,8 +382,8 @@ const SportsWidget: React.FC<SportsWidgetProps> = ({ league, globalDate }) => {
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
                             className={`flex items-center gap-2 px-5 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === tab.id
-                                    ? 'border-emerald-500 text-emerald-400'
-                                    : 'border-transparent text-gray-400 hover:text-white hover:border-gray-700'
+                                ? 'border-emerald-500 text-emerald-400'
+                                : 'border-transparent text-gray-400 hover:text-white hover:border-gray-700'
                                 }`}
                         >
                             {/* {tab.id === 0 && <tab.icon size={14} />} */}

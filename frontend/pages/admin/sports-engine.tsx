@@ -9,7 +9,7 @@ const SportsEngine = () => {
     const [previewData, setPreviewData] = useState<any>(null);
     const [loading, setLoading] = useState(false);
 
-    const ENGINE_URL = "http://localhost:8001"; // Direct access for now, or via proxy if needed
+    const ENGINE_URL = "/api/sports-engine"; // Access via proxy
 
     useEffect(() => {
         checkHealth();

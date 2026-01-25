@@ -158,7 +158,7 @@ const SPORTS = [
 
 export const LiveScoreBoard: React.FC<LiveScoreBoardProps> = ({ globalDate: initialDate }) => {
     const { language } = useLanguage();
-    const ENGINE_URL = "http://localhost:8001";
+    const ENGINE_URL = "/api/sports-engine";
 
     // --- State ---
     const [sport, setSport] = useState('football');
