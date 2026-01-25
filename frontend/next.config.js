@@ -13,6 +13,10 @@ const nextConfig = {
   async rewrites() {
     return [
       {
+        source: '/api/sports-engine/:path*',
+        destination: 'http://localhost:8001/:path*',
+      },
+      {
         source: '/api/scores',
         destination: 'http://localhost:8001/api/scores',
       },

@@ -230,9 +230,11 @@ export const LiveScoreBoard: React.FC<LiveScoreBoardProps> = ({ globalDate: init
     // --- Data Fetching ---
     const fetchScores = async () => {
         setLoading(true);
+        console.log(`Fetching scores for sport: ${sport}, date: ${date}, lang: ${language}`);
         try {
             const res = await fetch(`${ENGINE_URL}/api/scores?sport=${sport}&date=${date}&lang=${language}`);
             const json = await res.json();
+            console.log(`Received data for ${sport}:`, json.all_leagues?.length || 0, 'leagues');
             if (json.all_leagues) setMatches(json.all_leagues);
             else setMatches([]);
 
@@ -242,7 +244,7 @@ export const LiveScoreBoard: React.FC<LiveScoreBoardProps> = ({ globalDate: init
             else setDisplayDateLabel(date);
 
         } catch (e) {
-            console.error(e);
+            console.error('Error fetching scores:', e);
             setMatches([]);
         } finally {
             setLoading(false);
@@ -250,15 +252,15 @@ export const LiveScoreBoard: React.FC<LiveScoreBoardProps> = ({ globalDate: init
     };
 
     useEffect(() => {
-        fetchScores();
         setMatches(null);
         setSelectedCountry(null);
-    }, [sport, date]);
+        fetchScores();
+    }, [sport, date, language]);
 
     useEffect(() => {
         const i = setInterval(() => { if (date === 'today') fetchScores(); }, 60000);
         return () => clearInterval(i);
-    }, [sport, date]);
+    }, [sport, date, language]);
 
     // --- Derived Data ---
     const filteredMatches = React.useMemo(() => {
