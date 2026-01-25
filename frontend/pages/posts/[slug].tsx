@@ -28,8 +28,10 @@ interface Post {
 
 export async function getServerSideProps(context: any) {
     const { slug } = context.query;
+    const fetchUrl = `http://localhost:8080/api/posts/${encodeURIComponent(slug as string)}`;
+    console.log(`[SSR] Fetching post from: ${fetchUrl}`);
     try {
-        const res = await fetch(`http://localhost:8080/api/posts/${slug}`);
+        const res = await fetch(fetchUrl);
         if (!res.ok) throw new Error("Failed to fetch");
         const data = await res.json();
         return { props: { post: data.data } };

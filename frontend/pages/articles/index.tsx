@@ -12,6 +12,7 @@ interface Post {
     title_ar: string;
     title_en: string;
     title_tr: string;
+    slug: string;
     content_ar: string;
     content_en: string;
     content_tr: string;
@@ -70,7 +71,7 @@ const ArticlesPage = () => {
                                 const title = language === 'ar' ? post.title_ar : language === 'tr' ? post.title_tr : post.title_en;
                                 const content = language === 'ar' ? post.content_ar : language === 'tr' ? post.content_tr : post.content_en;
                                 return (
-                                    <Link href={`/posts/${post.id}`} key={post.id} className="group block h-full">
+                                    <Link href={`/posts/${post.slug || post.id}`} key={post.id} className="group block h-full">
                                         <div className="bg-midnight-black rounded-2xl overflow-hidden border border-gray-800 hover:border-emerald-500 transition-all h-full flex flex-col shadow-lg hover:shadow-emerald-500/10">
                                             <div className="relative aspect-video overflow-hidden">
                                                 {post.image_url ? (

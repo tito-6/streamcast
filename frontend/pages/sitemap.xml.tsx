@@ -26,10 +26,10 @@ function generateSiteMap(posts: any[], events: any[]) {
             })
             .join('')}
      ${posts
-            .map(({ id, created_at }) => {
+            .map(({ id, slug, created_at }) => {
                 return `
        <url>
-           <loc>${`${EXTERNAL_DATA_URL}/posts/${id}`}</loc>
+           <loc>${`${EXTERNAL_DATA_URL}/posts/${slug || id}`}</loc>
            <lastmod>${created_at ? new Date(created_at).toISOString() : new Date().toISOString()}</lastmod>
            <changefreq>weekly</changefreq>
            <priority>0.9</priority>

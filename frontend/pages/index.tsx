@@ -12,6 +12,7 @@ interface Post {
   title_ar: string;
   title_en: string;
   title_tr: string;
+  slug: string;
   content_ar: string;
   content_en: string;
   content_tr: string;
@@ -41,6 +42,7 @@ export default function HomePage() {
       try {
         const res = await fetch('/api/posts');
         const json = await res.json();
+        console.log("[Client] Fetched posts:", json.data);
         if (json.data) setPosts(json.data.slice(0, 3));
       } catch (err) { console.error(err); }
 
@@ -116,7 +118,7 @@ export default function HomePage() {
 
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {posts.map(post => (
-                  <Link key={post.id} href={`/posts/${post.id}`} className="glass-panel group rounded-xl overflow-hidden hover:border-emerald-energy transition-all block">
+                  <Link key={post.id} href={`/posts/${post.slug || post.id}`} className="glass-panel group rounded-xl overflow-hidden hover:border-emerald-energy transition-all block">
                     <div className="h-48 bg-gray-800 overflow-hidden relative">
                       <img
                         src={getImageUrl(post.image_url) || 'https://via.placeholder.com/400'}

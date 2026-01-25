@@ -1,7 +1,9 @@
 package handlers
 
 import (
+	"log"
 	"net/http"
+	"net/url"
 	"regexp"
 	"strconv"
 	"streamcast-backend/internal/models"
@@ -31,19 +33,30 @@ func GetPosts(c *gin.Context) {
 }
 
 func GetPost(c *gin.Context) {
-	param := c.Param("id")
+	paramRaw := c.Param("id")
+	param, _ := url.PathUnescape(paramRaw)
+	log.Printf("DEBUG: GetPost called with param: %s (raw: %s)", param, paramRaw)
 	var post models.Post
 	var err error
 
-	// Try numeric ID first
-	if _, errConv := strconv.Atoi(param); errConv == nil {
-		err = models.DB.First(&post, param).Error
-	} else {
-		// Try slug
-		err = models.DB.Where("slug = ?", param).First(&post).Error
+	// 1. Try Slug first (Since we want title-based routing)
+	err = models.DB.Where("slug = ?", param).First(&post).Error
+	if err == nil {
+		log.Printf("DEBUG: Found post by slug: %s", post.Slug)
+	}
+
+	// 2. If slug not found AND param is numeric, try numeric ID fallback
+	if err != nil {
+		if _, errConv := strconv.Atoi(param); errConv == nil {
+			err = models.DB.First(&post, param).Error
+			if err == nil {
+				log.Printf("DEBUG: Found post by ID: %d", post.ID)
+			}
+		}
 	}
 
 	if err != nil {
+		log.Printf("DEBUG: Post not found for param: %s", param)
 		c.JSON(http.StatusNotFound, gin.H{"error": "Post not found"})
 		return
 	}
