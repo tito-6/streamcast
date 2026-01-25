@@ -8,11 +8,15 @@ interface Post {
     title_ar: string;
     title_en: string;
     title_tr: string;
+    slug: string;
     content_ar: string;
     content_en: string;
     content_tr: string;
     image_url: string;
     category: string;
+    meta_title?: string;
+    meta_description?: string;
+    keywords?: string;
     created_at: string;
 }
 
@@ -112,7 +116,7 @@ const PostsPage = () => {
                                 <input className="input-field w-full bg-midnight-black p-2 rounded border border-gray-700 text-white"
                                     value={form[`title_${activeTab}`] || ''}
                                     onChange={e => setForm({ ...form, [`title_${activeTab}`]: e.target.value })}
-                                    required={activeTab === 'ar'} // Require mostly AR at least
+                                    required={activeTab === 'ar'}
                                 />
                             </div>
 
@@ -121,6 +125,36 @@ const PostsPage = () => {
                                 <textarea className="input-field w-full bg-midnight-black p-2 rounded border border-gray-700 text-white h-32"
                                     value={form[`content_${activeTab}`] || ''}
                                     onChange={e => setForm({ ...form, [`content_${activeTab}`]: e.target.value })}
+                                />
+                            </div>
+
+                            <hr className="border-gray-800 my-4" />
+                            <h4 className="text-xs font-bold text-emerald-500 uppercase mb-2 italic">SEO Settings</h4>
+
+                            <div>
+                                <label className="text-xs text-gray-400 block mb-1">Meta Title ({activeTab.toUpperCase()})</label>
+                                <input className="input-field w-full bg-midnight-black p-2 rounded border border-gray-700 text-white"
+                                    value={form.meta_title || ''}
+                                    onChange={e => setForm({ ...form, meta_title: e.target.value })}
+                                    placeholder="SEO Title override..."
+                                />
+                            </div>
+
+                            <div>
+                                <label className="text-xs text-gray-400 block mb-1">Meta Description ({activeTab.toUpperCase()})</label>
+                                <textarea className="input-field w-full bg-midnight-black p-2 rounded border border-gray-700 text-white h-20"
+                                    value={form.meta_description || ''}
+                                    onChange={e => setForm({ ...form, meta_description: e.target.value })}
+                                    placeholder="Meta description for search engines..."
+                                />
+                            </div>
+
+                            <div>
+                                <label className="text-xs text-gray-400 block mb-1">Keywords</label>
+                                <input className="input-field w-full bg-midnight-black p-2 rounded border border-gray-700 text-white"
+                                    value={form.keywords || ''}
+                                    onChange={e => setForm({ ...form, keywords: e.target.value })}
+                                    placeholder="football, match, real madrid..."
                                 />
                             </div>
 

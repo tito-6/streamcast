@@ -53,14 +53,22 @@ func GetInstagramFeed(c *gin.Context) {
 
 			// Try to extract shortcode
 			id := "post-" + fmt.Sprintf("%d", len(parsedData))
+			// Default image if shortcode not found or for placeholder
 			img := "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=400&q=80" // Placeholder
+			isVideo := false
 
 			matches := re.FindStringSubmatch(link)
 			if len(matches) > 2 {
+				mType := matches[1]
 				shortcode := matches[2]
 				id = shortcode
-				// Public media proxy (often works for public posts)
-				img = fmt.Sprintf("https://www.instagram.com/p/%s/media/?size=l", shortcode)
+
+				if mType == "reels" || mType == "reel" {
+					isVideo = true
+				}
+
+				// Use a proxy (weserv.nl) to bypass hotlinking protection for public images
+				img = fmt.Sprintf("https://images.weserv.nl/?url=https://www.instagram.com/p/%s/media/?size=l&w=600&h=800&fit=cover&default=https://via.placeholder.com/600x800", shortcode)
 			}
 
 			parsedData = append(parsedData, gin.H{
@@ -68,6 +76,7 @@ func GetInstagramFeed(c *gin.Context) {
 				"media_url": img,
 				"caption":   "View latest update on Instagram",
 				"permalink": link,
+				"is_video":  isVideo,
 			})
 		}
 

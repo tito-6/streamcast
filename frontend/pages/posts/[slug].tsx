@@ -14,18 +14,22 @@ interface Post {
     title_ar: string;
     title_en: string;
     title_tr: string;
+    slug: string;
     content_ar: string;
     content_en: string;
     content_tr: string;
     image_url: string;
     category: string;
+    meta_title?: string;
+    meta_description?: string;
+    keywords?: string;
     created_at: string;
 }
 
 export async function getServerSideProps(context: any) {
-    const { id } = context.query;
+    const { slug } = context.query;
     try {
-        const res = await fetch(`http://localhost:8080/api/posts/${id}`);
+        const res = await fetch(`http://localhost:8080/api/posts/${slug}`);
         if (!res.ok) throw new Error("Failed to fetch");
         const data = await res.json();
         return { props: { post: data.data } };
@@ -54,11 +58,38 @@ const PostDetailsPage = ({ post }: { post: Post }) => {
         return <div className="text-white text-center py-20">{t.loading}</div>;
     }
 
-    const title = language === 'ar' ? post.title_ar : language === 'tr' ? post.title_tr : post.title_en;
-    const content = language === 'ar' ? post.content_ar : language === 'tr' ? post.content_tr : post.content_en;
+    const title = language === 'ar' ? (post.title_ar || post.title_en) : language === 'tr' ? (post.title_tr || post.title_en) : post.title_en;
+    const content = language === 'ar' ? (post.content_ar || post.content_en) : language === 'tr' ? (post.content_tr || post.content_en) : post.content_en;
+
+    const metaTitle = post.meta_title || `${title} | ${t.lastNews}`;
+    const metaDescription = post.meta_description || content?.substring(0, 160);
 
     return (
-        <Layout title={`${title} | ${t.lastNews}`} description={content?.substring(0, 150)} lang={language}>
+        <Layout
+            title={metaTitle}
+            description={metaDescription}
+            keywords={post.keywords}
+            lang={language}
+            image={getImageUrl(post.image_url) || undefined}
+        >
+            {/* Structured Data for SEO */}
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{
+                    __html: JSON.stringify({
+                        "@context": "https://schema.org",
+                        "@type": "NewsArticle",
+                        "headline": title,
+                        "image": [getImageUrl(post.image_url)].filter(Boolean),
+                        "datePublished": post.created_at,
+                        "author": [{
+                            "@type": "Organization",
+                            "name": "StreamCast",
+                            "url": "https://sportevent.online"
+                        }]
+                    })
+                }}
+            />
             <div className="pt-24 pb-20 bg-black min-h-screen">
                 <div className="container mx-auto px-4 max-w-4xl">
 

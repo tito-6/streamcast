@@ -315,6 +315,18 @@ async def get_instagram():
     }
 
 # --- AI Chat Agent ---
+async def get_gemini_key():
+    """Fetch API Key from Go Backend Settings"""
+    try:
+        async with httpx.AsyncClient() as client:
+            resp = await client.get("http://localhost:8080/api/settings", timeout=2.0)
+            if resp.status_code == 200:
+                settings = resp.json().get("data", {})
+                return settings.get("gemini_api_key")
+    except Exception as e:
+        print(f"Error fetching Gemini key from API: {e}")
+    return os.getenv("GEMINI_API_KEY")
+
 @app.post("/api/chat")
 async def chat_agent(request: Request):
     try:
@@ -323,7 +335,8 @@ async def chat_agent(request: Request):
         history_raw = body.get("history", [])
         
         import google.generativeai as genai
-        GENAI_KEY = os.getenv("GEMINI_API_KEY")
+        GENAI_KEY = await get_gemini_key()
+        
         if not GENAI_KEY: 
             return {"response": "I'm offline right now (No Key)."}
         

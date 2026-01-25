@@ -88,19 +88,23 @@ type Archive struct {
 }
 
 type Post struct {
-	ID         uint      `gorm:"primaryKey" json:"id"`
-	TitleAr    string    `json:"title_ar"`
-	TitleEn    string    `json:"title_en"`
-	TitleTr    string    `json:"title_tr"`
-	ContentAr  string    `json:"content_ar"`
-	ContentEn  string    `json:"content_en"`
-	ContentTr  string    `json:"content_tr"`
-	ImageURL   string    `json:"image_url"`
-	Category   string    `json:"category"`
-	Slug       string    `gorm:"index" json:"slug"`
-	IsFeatured bool      `json:"is_featured"`
-	CreatedAt  time.Time `json:"created_at"`
-	UpdatedAt  time.Time `json:"updated_at"`
+	ID         uint   `gorm:"primaryKey" json:"id"`
+	TitleAr    string `json:"title_ar"`
+	TitleEn    string `json:"title_en"`
+	TitleTr    string `json:"title_tr"`
+	ContentAr  string `json:"content_ar"`
+	ContentEn  string `json:"content_en"`
+	ContentTr  string `json:"content_tr"`
+	ImageURL   string `json:"image_url"`
+	Category   string `json:"category"`
+	Slug       string `gorm:"index;unique" json:"slug"`
+	IsFeatured bool   `json:"is_featured"`
+	// SEO Fields
+	MetaTitle       string    `json:"meta_title"`
+	MetaDescription string    `json:"meta_description"`
+	Keywords        string    `json:"keywords"`
+	CreatedAt       time.Time `json:"created_at"`
+	UpdatedAt       time.Time `json:"updated_at"`
 }
 
 type Ad struct {

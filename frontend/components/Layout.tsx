@@ -11,21 +11,25 @@ interface LayoutProps {
   children: ReactNode;
   title?: string;
   description?: string;
+  keywords?: string;
   lang?: 'ar' | 'en' | 'tr';
+  image?: string;
 }
 
 const Layout: React.FC<LayoutProps> = ({
   children,
   title = 'Sport Events | الحدث الرياضي | Live Football',
   description = 'Watch Live Football and Sport Events. تابع الحدث الرياضي وبث مباشر للمباريات على منصة sportevent.online. Best place for live sports streaming.',
-  lang = 'ar'
+  keywords = 'sport events, الحدث الرياضي, live football, بث مباشر, مباريات اليوم, live sports, football streaming, كورة لايف',
+  lang = 'ar',
+  image = 'https://sportevent.online/og-social-share.jpg'
 }) => {
   return (
     <>
       <Head>
         <title>{title}</title>
         <meta name="description" content={description} />
-        <meta name="keywords" content="sport events, الحدث الرياضي, live football, بث مباشر, مباريات اليوم, live sports, football streaming, كورة لايف" />
+        <meta name="keywords" content={keywords} />
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
         <meta charSet="utf-8" />
         <link rel="icon" href="/favicon.svg" />
@@ -36,11 +40,11 @@ const Layout: React.FC<LayoutProps> = ({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
 
         {/* Open Graph / Social Media */}
-        <meta property="og:type" content="website" />
+        <meta property="og:type" content="article" />
         <meta property="og:site_name" content="Sport Events" />
         <meta property="og:title" content={title} />
         <meta property="og:description" content={description} />
-        <meta property="og:image" content="https://sportevent.online/og-social-share.jpg" />
+        <meta property="og:image" content={image} />
         <meta property="og:url" content="https://sportevent.online" />
         <meta property="og:locale" content={lang === 'ar' ? 'ar_AE' : 'en_US'} />
 
@@ -48,7 +52,7 @@ const Layout: React.FC<LayoutProps> = ({
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={title} />
         <meta name="twitter:description" content={description} />
-        <meta name="twitter:image" content="https://sportevent.online/og-social-share.jpg" />
+        <meta name="twitter:image" content={image} />
       </Head>
 
       {/* Google Analytics */}

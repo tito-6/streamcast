@@ -9,7 +9,8 @@ const SettingsPage = () => {
         maintenanceMode: 'false',
         allowRegistration: 'true',
         instagram_username: 'event_01s',
-        instagram_custom_feed: '[]'
+        instagram_custom_feed: '[]',
+        gemini_api_key: ''
     });
 
     useEffect(() => {
@@ -164,6 +165,24 @@ const SettingsPage = () => {
                             >
                                 <div className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform ${config.allowRegistration === 'true' ? 'translate-x-6' : ''}`} />
                             </button>
+                        </div>
+
+                        {/* Gemini API Key */}
+                        <div className="pt-4 border-t border-gray-800">
+                            <label className="block text-sm text-gray-400 mb-2 font-bold flex items-center gap-2">
+                                <Server size={14} className="text-emerald-500" />
+                                Gemini AI API Key
+                            </label>
+                            <input
+                                type="password"
+                                value={config.gemini_api_key || ''}
+                                onChange={e => setConfig({ ...config, gemini_api_key: e.target.value })}
+                                className="w-full bg-midnight-black border border-gray-700 rounded-lg p-3 text-white focus:border-emerald-energy transition-colors text-sm"
+                                placeholder="AIZA..."
+                            />
+                            <p className="text-[10px] text-gray-500 mt-2">
+                                Key used for the Athena AI Sports Analyst chat.
+                            </p>
                         </div>
                     </div>
                 </div>
