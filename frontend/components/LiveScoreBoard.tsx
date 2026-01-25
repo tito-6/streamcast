@@ -341,72 +341,98 @@ export const LiveScoreBoard: React.FC<LiveScoreBoardProps> = ({ globalDate: init
                 </div>
             </div>
 
-            {/* 2. FILTER & DATE BAR */}
+            {/* 2. FILTER & DATE BAR - Mobile Optimized */}
             <div className="bg-[#1a1f24] border-b border-white/10 mb-4 z-30 shadow-md sticky top-[57px]">
-                <div className="max-w-[1400px] mx-auto px-4 py-3 space-y-3">
+                <div className="max-w-[1400px] mx-auto px-3 py-3 space-y-3">
 
-                    {/* Row 1: Filters + Countries Dropdown */}
-                    <div className="flex items-center justify-between gap-2">
-                        {/* Filters - Scrollable on mobile */}
-                        <div className="flex items-center gap-1 overflow-x-auto flex-1 pb-1 scrollbar-hide">
-                            {['ALL', 'LIVE', 'ODDS', 'FINISHED', 'SCHEDULED'].map(f => (
-                                <button
-                                    key={f}
-                                    onClick={() => setFilter(f)}
-                                    className={`flex-shrink-0 px-3 py-2 rounded-md text-[11px] font-bold uppercase tracking-wider transition-all border border-transparent
-                                        ${filter === f
-                                            ? 'bg-[#3b4046] text-white border-white/10 shadow-sm'
-                                            : 'text-[#9ca3af] hover:bg-[#2a2f35] hover:text-white active:bg-[#2a2f35]'
-                                        }`}
-                                >
-                                    {t[f.toLowerCase()] || f}
-                                </button>
-                            ))}
-                        </div>
-
-                        {/* Countries Dropdown */}
-                        <select
-                            value={selectedCountry || ''}
-                            onChange={(e) => setSelectedCountry(e.target.value || null)}
-                            className="flex-shrink-0 bg-[#2a2f35] text-white text-xs font-bold px-3 py-2 rounded-lg border border-white/10 outline-none cursor-pointer hover:bg-[#3b4046] transition-colors"
-                        >
-                            <option value="">{t.countries}</option>
-                            {countries.map(c => (
-                                <option key={c} value={c}>{c}</option>
-                            ))}
-                        </select>
+                    {/* Row 1: Filters - Grid Layout for Mobile */}
+                    <div className="grid grid-cols-3 gap-2 md:flex md:flex-wrap md:gap-2">
+                        {['ALL', 'LIVE', 'ODDS', 'FINISHED', 'SCHEDULED'].map(f => (
+                            <button
+                                key={f}
+                                onClick={() => setFilter(f)}
+                                className={`
+                                    min-h-[48px] px-4 py-3 rounded-lg text-xs font-bold uppercase tracking-wide
+                                    transition-all duration-200 active:scale-95
+                                    ${filter === f
+                                        ? 'bg-[#10b981] text-white shadow-lg shadow-[#10b981]/30'
+                                        : 'bg-[#2a2f35] text-gray-300 active:bg-[#3b4046]'
+                                    }
+                                `}
+                            >
+                                {t[f.toLowerCase()] || f}
+                            </button>
+                        ))}
                     </div>
 
-                    {/* Row 2: Date Navigation */}
-                    <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
-                        <button
-                            onClick={() => setDate('yesterday')}
-                            className={`flex-shrink-0 px-4 py-2 rounded-md text-xs font-bold uppercase transition-colors whitespace-nowrap ${date === 'yesterday' ? 'bg-[#10b981] text-white shadow-sm' : 'bg-[#2a2f35] text-gray-400 hover:text-white hover:bg-[#3b4046]'}`}
-                        >
-                            {t.yesterday}
-                        </button>
-                        <button
-                            onClick={() => setDate('today')}
-                            className={`flex-shrink-0 px-4 py-2 rounded-md text-xs font-bold uppercase transition-colors whitespace-nowrap ${date === 'today' ? 'bg-[#10b981] text-white shadow-sm' : 'bg-[#2a2f35] text-gray-400 hover:text-white hover:bg-[#3b4046]'}`}
-                        >
-                            {t.today}
-                        </button>
-                        <button
-                            onClick={() => setDate('tomorrow')}
-                            className={`flex-shrink-0 px-4 py-2 rounded-md text-xs font-bold uppercase transition-colors whitespace-nowrap ${date === 'tomorrow' ? 'bg-[#10b981] text-white shadow-sm' : 'bg-[#2a2f35] text-gray-400 hover:text-white hover:bg-[#3b4046]'}`}
-                        >
-                            {t.tomorrow}
-                        </button>
+                    {/* Row 2: Date + Countries */}
+                    <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                        {/* Date Buttons */}
+                        <div className="grid grid-cols-3 gap-2 flex-1">
+                            <button
+                                onClick={() => setDate('yesterday')}
+                                className={`
+                                    min-h-[48px] px-4 py-3 rounded-lg text-xs font-bold uppercase
+                                    transition-all duration-200 active:scale-95
+                                    ${date === 'yesterday'
+                                        ? 'bg-[#10b981] text-white shadow-lg shadow-[#10b981]/30'
+                                        : 'bg-[#2a2f35] text-gray-300 active:bg-[#3b4046]'
+                                    }
+                                `}
+                            >
+                                {t.yesterday}
+                            </button>
+                            <button
+                                onClick={() => setDate('today')}
+                                className={`
+                                    min-h-[48px] px-4 py-3 rounded-lg text-xs font-bold uppercase
+                                    transition-all duration-200 active:scale-95
+                                    ${date === 'today'
+                                        ? 'bg-[#10b981] text-white shadow-lg shadow-[#10b981]/30'
+                                        : 'bg-[#2a2f35] text-gray-300 active:bg-[#3b4046]'
+                                    }
+                                `}
+                            >
+                                {t.today}
+                            </button>
+                            <button
+                                onClick={() => setDate('tomorrow')}
+                                className={`
+                                    min-h-[48px] px-4 py-3 rounded-lg text-xs font-bold uppercase
+                                    transition-all duration-200 active:scale-95
+                                    ${date === 'tomorrow'
+                                        ? 'bg-[#10b981] text-white shadow-lg shadow-[#10b981]/30'
+                                        : 'bg-[#2a2f35] text-gray-300 active:bg-[#3b4046]'
+                                    }
+                                `}
+                            >
+                                {t.tomorrow}
+                            </button>
+                        </div>
 
-                        <div className="w-px h-6 bg-white/10 mx-1"></div>
+                        {/* Countries Dropdown + Calendar */}
+                        <div className="flex gap-2">
+                            <select
+                                value={selectedCountry || ''}
+                                onChange={(e) => setSelectedCountry(e.target.value || null)}
+                                className="flex-1 min-h-[48px] bg-[#2a2f35] text-white text-xs font-bold px-4 rounded-lg border border-white/10 outline-none cursor-pointer active:bg-[#3b4046] transition-colors"
+                            >
+                                <option value="">{t.countries}</option>
+                                {countries.map(c => (
+                                    <option key={c} value={c}>{c}</option>
+                                ))}
+                            </select>
 
-                        <div className="relative flex items-center gap-2 px-3 py-2 bg-[#2a2f35] rounded-md flex-shrink-0">
-                            <CalendarDays size={14} className="text-[#10b981]" />
-                            <input
-                                type="date"
-                                className="bg-transparent text-white text-xs font-bold outline-none cursor-pointer w-28"
-                                onChange={(e) => setDate(e.target.value)}
-                            />
+                            <div className="relative">
+                                <input
+                                    type="date"
+                                    className="min-h-[48px] w-[48px] bg-[#2a2f35] text-white text-xs font-bold rounded-lg border border-white/10 outline-none cursor-pointer active:bg-[#3b4046] transition-colors opacity-0 absolute inset-0"
+                                    onChange={(e) => setDate(e.target.value)}
+                                />
+                                <div className="min-h-[48px] w-[48px] bg-[#2a2f35] rounded-lg border border-white/10 flex items-center justify-center pointer-events-none">
+                                    <CalendarDays size={20} className="text-[#10b981]" />
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
