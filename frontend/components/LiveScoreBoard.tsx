@@ -181,28 +181,28 @@ interface LiveScoreBoardProps {
 }
 
 // Full Flashscore List
-const SPORTS = [
-    { id: 'football', label: 'Football' },
-    { id: 'tennis', label: 'Tennis' },
-    { id: 'basketball', label: 'Basketball' },
-    { id: 'hockey', label: 'Hockey' },
-    { id: 'american-football', label: 'Am. Football' },
-    { id: 'baseball', label: 'Baseball' },
-    { id: 'handball', label: 'Handball' },
-    { id: 'rugby-union', label: 'Rugby Union' },
-    { id: 'rugby-league', label: 'Rugby League' },
-    { id: 'volleyball', label: 'Volleyball' },
-    { id: 'cricket', label: 'Cricket' },
-    { id: 'darts', label: 'Darts' },
-    { id: 'snooker', label: 'Snooker' },
-    { id: 'boxing', label: 'Boxing' },
-    { id: 'mma', label: 'MMA' },
-    { id: 'esports', label: 'Esports' },
-    { id: 'badminton', label: 'Badminton' },
-    { id: 'golf', label: 'Golf' },
-    { id: 'motorsport', label: 'Motorsport' },
-    { id: 'table-tennis', label: 'Table Tennis' },
-];
+const getSportLabel = (id: string, lang: string) => {
+    const labels: Record<string, Record<string, string>> = {
+        football: { en: 'Football', ar: 'كرة القدم', tr: 'Futbol' },
+        tennis: { en: 'Tennis', ar: 'التنس', tr: 'Tenis' },
+        basketball: { en: 'Basketball', ar: 'كرة السلة', tr: 'Basketbol' },
+        hockey: { en: 'Hockey', ar: 'الهوكي', tr: 'Hokey' },
+        "american-football": { en: 'Am. Football', ar: 'كرة قدم أمريكية', tr: 'Am. Futbolu' },
+        baseball: { en: 'Baseball', ar: 'بيسبول', tr: 'Beyzbol' },
+        handball: { en: 'Handball', ar: 'كرة اليد', tr: 'Hentbol' },
+        "rugby-union": { en: 'Rugby Union', ar: 'الرجبي', tr: 'Ragbi' },
+        volleyball: { en: 'Volleyball', ar: 'الكرة الطائرة', tr: 'Voleybol' },
+        cricket: { en: 'Cricket', ar: 'الكريكت', tr: 'Kriket' },
+        darts: { en: 'Darts', ar: 'السهام', tr: 'Dart' },
+        snooker: { en: 'Snooker', ar: 'السنوكر', tr: 'Snooker' },
+        boxing: { en: 'Boxing', ar: 'الملاكمة', tr: 'Boks' },
+        mma: { en: 'MMA', ar: 'فنون القتال', tr: 'MMA' },
+        esports: { en: 'Esports', ar: 'الرياضات الإلكترونية', tr: 'E-Spor' },
+    };
+    return labels[id]?.[lang] || labels[id]?.en || id;
+};
+
+const SPORTS_LIST = ['football', 'tennis', 'basketball', 'hockey', 'american-football', 'baseball', 'handball', 'volleyball', 'cricket', 'mma', 'esports'];
 
 export const LiveScoreBoard: React.FC<LiveScoreBoardProps> = ({ globalDate: initialDate }) => {
     const { language } = useLanguage();
@@ -212,6 +212,14 @@ export const LiveScoreBoard: React.FC<LiveScoreBoardProps> = ({ globalDate: init
     // --- State ---
     const [sport, setSport] = useState('football');
     const [date, setDate] = useState(initialDate);
+
+    // Sync from parent
+    useEffect(() => {
+        if (initialDate !== date) {
+            setDate(initialDate);
+        }
+    }, [initialDate]);
+
     const [displayDateLabel, setDisplayDateLabel] = useState('TODAY');
     const [filter, setFilter] = useState('ALL');
     const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
@@ -322,41 +330,41 @@ export const LiveScoreBoard: React.FC<LiveScoreBoardProps> = ({ globalDate: init
         <div className="flex flex-col min-h-screen bg-[#0b0e11] font-sans text-[#e9ecef]">
 
             {/* 1. TOP SPORTS NAVIGATION */}
-            <div className="bg-[#121619] border-b border-white/10 sticky top-0 z-40">
-                <div className="max-w-[1400px] mx-auto px-4 flex items-center gap-1 overflow-x-auto custom-scrollbar no-scrollbar">
-                    {SPORTS.map(s => (
+            <div className="bg-[#121619]/90 backdrop-blur-md border-b border-white/5 sticky top-[80px] z-40">
+                <div className="max-w-[1400px] mx-auto px-4 flex items-center gap-1 overflow-x-auto no-scrollbar py-1">
+                    {SPORTS_LIST.map(id => (
                         <button
-                            key={s.id}
-                            onClick={() => setSport(s.id)}
-                            className={`flex items-center gap-2 px-4 py-4 text-xs font-bold uppercase transition-all whitespace-nowrap border-b-2
-                                ${sport === s.id
-                                    ? 'text-[#ff3c00] border-[#ff3c00] bg-white/5'
-                                    : 'text-[#9ca3af] border-transparent hover:text-white hover:bg-white/5'
+                            key={id}
+                            onClick={() => setSport(id)}
+                            className={`flex items-center gap-2 px-6 py-4 text-xs font-bold uppercase transition-all whitespace-nowrap border-b-2
+                                ${sport === id
+                                    ? 'text-emerald-400 border-emerald-400 bg-emerald-400/5'
+                                    : 'text-gray-500 border-transparent hover:text-white hover:bg-white/5'
                                 }`}
                         >
-                            <span className={`text-sm ${sport === s.id ? 'text-[#ff3c00]' : 'opacity-80'}`}>{getSportIcon(s.id)}</span>
-                            {s.label}
+                            <span className={`text-lg ${sport === id ? 'text-emerald-400' : 'opacity-60'}`}>{getSportIcon(id)}</span>
+                            {getSportLabel(id, language)}
                         </button>
                     ))}
                 </div>
             </div>
 
             {/* 2. FILTER & DATE BAR - Mobile Optimized */}
-            <div className="bg-[#1a1f24] border-b border-white/10 mb-4 z-30 shadow-md sticky top-[57px]">
-                <div className="max-w-[1400px] mx-auto px-3 py-3 space-y-3">
+            <div className="bg-[#1a1f24]/80 backdrop-blur-md border-b border-white/5 mb-6 z-30 shadow-xl sticky top-[136px] md:top-[144px]">
+                <div className="max-w-[1400px] mx-auto px-3 py-3 flex flex-col md:flex-row items-center justify-between gap-4">
 
-                    {/* Row 1: Filters - Grid Layout for Mobile */}
-                    <div className="grid grid-cols-3 gap-2 md:flex md:flex-wrap md:gap-2">
-                        {['ALL', 'LIVE', 'ODDS', 'FINISHED', 'SCHEDULED'].map(f => (
+                    {/* Filters */}
+                    <div className="flex bg-black/20 p-1 rounded-xl border border-white/5 w-full md:w-auto overflow-x-auto no-scrollbar">
+                        {['ALL', 'LIVE', 'FINISHED', 'SCHEDULED', 'ODDS'].map(f => (
                             <button
                                 key={f}
                                 onClick={() => setFilter(f)}
                                 className={`
-                                    min-h-[48px] px-4 py-3 rounded-lg text-xs font-bold uppercase tracking-wide
-                                    transition-all duration-200 active:scale-95
+                                    flex-1 md:flex-none px-5 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest
+                                    transition-all duration-200 whitespace-nowrap
                                     ${filter === f
-                                        ? 'bg-[#10b981] text-white shadow-lg shadow-[#10b981]/30'
-                                        : 'bg-[#2a2f35] text-gray-300 active:bg-[#3b4046]'
+                                        ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20'
+                                        : 'text-gray-500 hover:text-white'
                                     }
                                 `}
                             >
@@ -365,73 +373,32 @@ export const LiveScoreBoard: React.FC<LiveScoreBoardProps> = ({ globalDate: init
                         ))}
                     </div>
 
-                    {/* Row 2: Date + Countries */}
-                    <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-                        {/* Date Buttons */}
-                        <div className="grid grid-cols-3 gap-2 flex-1">
-                            <button
-                                onClick={() => setDate('yesterday')}
-                                className={`
-                                    min-h-[48px] px-4 py-3 rounded-lg text-xs font-bold uppercase
-                                    transition-all duration-200 active:scale-95
-                                    ${date === 'yesterday'
-                                        ? 'bg-[#10b981] text-white shadow-lg shadow-[#10b981]/30'
-                                        : 'bg-[#2a2f35] text-gray-300 active:bg-[#3b4046]'
-                                    }
-                                `}
-                            >
-                                {t.yesterday}
-                            </button>
-                            <button
-                                onClick={() => setDate('today')}
-                                className={`
-                                    min-h-[48px] px-4 py-3 rounded-lg text-xs font-bold uppercase
-                                    transition-all duration-200 active:scale-95
-                                    ${date === 'today'
-                                        ? 'bg-[#10b981] text-white shadow-lg shadow-[#10b981]/30'
-                                        : 'bg-[#2a2f35] text-gray-300 active:bg-[#3b4046]'
-                                    }
-                                `}
-                            >
-                                {t.today}
-                            </button>
-                            <button
-                                onClick={() => setDate('tomorrow')}
-                                className={`
-                                    min-h-[48px] px-4 py-3 rounded-lg text-xs font-bold uppercase
-                                    transition-all duration-200 active:scale-95
-                                    ${date === 'tomorrow'
-                                        ? 'bg-[#10b981] text-white shadow-lg shadow-[#10b981]/30'
-                                        : 'bg-[#2a2f35] text-gray-300 active:bg-[#3b4046]'
-                                    }
-                                `}
-                            >
-                                {t.tomorrow}
-                            </button>
-                        </div>
-
-                        {/* Countries Dropdown + Calendar */}
-                        <div className="flex gap-2">
+                    {/* Countries & Search */}
+                    <div className="flex items-center gap-2 w-full md:w-auto">
+                        <div className="relative flex-1 md:w-64">
                             <select
                                 value={selectedCountry || ''}
                                 onChange={(e) => setSelectedCountry(e.target.value || null)}
-                                className="flex-1 min-h-[48px] bg-[#2a2f35] text-white text-xs font-bold px-4 rounded-lg border border-white/10 outline-none cursor-pointer active:bg-[#3b4046] transition-colors"
+                                className="w-full h-10 bg-white/5 text-white text-[11px] font-bold px-10 rounded-xl border border-white/10 outline-none cursor-pointer hover:bg-white/10 transition-colors appearance-none"
                             >
                                 <option value="">{t.countries}</option>
                                 {countries.map(c => (
                                     <option key={c} value={c}>{c}</option>
                                 ))}
                             </select>
+                            <Globe size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-500" />
+                            <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500" />
+                        </div>
 
-                            <div className="relative">
-                                <input
-                                    type="date"
-                                    className="min-h-[48px] w-[48px] bg-[#2a2f35] text-white text-xs font-bold rounded-lg border border-white/10 outline-none cursor-pointer active:bg-[#3b4046] transition-colors opacity-0 absolute inset-0"
-                                    onChange={(e) => setDate(e.target.value)}
-                                />
-                                <div className="min-h-[48px] w-[48px] bg-[#2a2f35] rounded-lg border border-white/10 flex items-center justify-center pointer-events-none">
-                                    <CalendarDays size={20} className="text-[#10b981]" />
-                                </div>
+                        {/* Calendar Picker (Icon Only) */}
+                        <div className="relative group">
+                            <input
+                                type="date"
+                                className="w-10 h-10 scale-0 absolute inset-0 z-10 cursor-pointer"
+                                onChange={(e) => setDate(e.target.value)}
+                            />
+                            <div className="w-10 h-10 bg-white/5 rounded-xl border border-white/10 flex items-center justify-center group-hover:bg-emerald-500 group-hover:border-emerald-500 transition-all">
+                                <CalendarDays size={18} className="text-emerald-500 group-hover:text-white" />
                             </div>
                         </div>
                     </div>
@@ -444,18 +411,34 @@ export const LiveScoreBoard: React.FC<LiveScoreBoardProps> = ({ globalDate: init
                 {/* MAIN FEED */}
                 <div className="min-h-[500px]">
                     {loading && !matches ? (
-                        <div className="p-20 flex flex-col items-center justify-center opacity-50">
-                            <RefreshCw className="animate-spin text-[#10b981] mb-4" size={32} />
-                            <div className="text-xs font-bold tracking-widest text-[#10b981]">LOADING {sport.toUpperCase()}...</div>
+                        <div className="p-20 flex flex-col items-center justify-center">
+                            <RefreshCw className="animate-spin text-emerald-500 mb-6" size={48} />
+                            <div className="text-[10px] font-black tracking-[0.3em] text-emerald-500/60 uppercase">Analysing Pitch...</div>
                         </div>
                     ) : filteredMatches.length === 0 ? (
-                        <div className="bg-[#1a1f24] rounded-lg p-12 text-center border border-white/5 flex flex-col items-center">
-                            <Trophy size={48} className="text-gray-700 mb-4" />
-                            <div className="text-gray-500 text-sm">No matches found for <span className="text-white font-bold">{displayDateLabel}</span></div>
-                            {selectedCountry && (
-                                <div className="mt-2 text-xs text-red-400">Filter: {selectedCountry}</div>
-                            )}
-                            <button onClick={() => { setFilter('ALL'); setSelectedCountry(null); }} className="mt-4 px-4 py-2 bg-[#2a2f35] rounded text-xs text-white hover:bg-[#3b4046]">Reset Filters</button>
+                        <div className="bg-[#1a1f24] rounded-2xl p-16 text-center border border-white/5 flex flex-col items-center shadow-2xl">
+                            <div className="w-20 h-20 rounded-full bg-emerald-500/5 flex items-center justify-center mb-6">
+                                <Trophy size={40} className="text-emerald-500/20" />
+                            </div>
+                            <h3 className="text-xl font-bold text-white mb-2">No Matches Scheduled</h3>
+                            <p className="text-gray-500 text-sm max-w-xs mx-auto mb-8">
+                                There are no <span className="text-emerald-400 font-bold">{sport}</span> matches found for {displayDateLabel}. Try another sport or date.
+                            </p>
+
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => { setFilter('ALL'); setSelectedCountry(null); }}
+                                    className="px-6 py-2.5 bg-emerald-500 rounded-xl text-xs font-bold text-white shadow-lg shadow-emerald-500/20 hover:scale-105 transition-all"
+                                >
+                                    Reset Filters
+                                </button>
+                                <button
+                                    onClick={() => setSport('football')}
+                                    className="px-6 py-2.5 bg-white/5 rounded-xl text-xs font-bold text-white hover:bg-white/10 transition-all"
+                                >
+                                    Browse Football
+                                </button>
+                            </div>
                         </div>
                     ) : (
                         <div className="space-y-3">
@@ -464,80 +447,101 @@ export const LiveScoreBoard: React.FC<LiveScoreBoardProps> = ({ globalDate: init
                                     {/* League Header */}
                                     <div className="bg-[#23282d] px-4 py-2 flex items-center justify-between border-b border-white/5">
                                         <div className="flex items-center gap-3">
-                                            {/* Local Logo Fallback */}
                                             <LeagueIcon country={group.country} />
-
-                                            <div className="flex flex-col leading-tight">
-                                                <span className="text-[10px] font-bold text-[#10b981] uppercase tracking-wide">{group.country}</span>
+                                            <div className="flex items-baseline gap-2">
+                                                <span className="text-[10px] font-black text-emerald-500/80 uppercase tracking-widest">{group.country}</span>
+                                                <span className="text-gray-600">/</span>
                                                 <span className="text-sm font-bold text-white tracking-tight">{group.league}</span>
                                             </div>
                                         </div>
-                                        <div className="text-[10px] font-bold text-gray-500 cursor-pointer hover:text-white uppercase tracking-wider">Standings</div>
+                                        <div className="hidden md:flex items-center gap-2">
+                                            <button className="text-[10px] font-bold text-gray-500 px-3 py-1 rounded bg-white/5 hover:bg-white/10 hover:text-white transition-all uppercase tracking-wider">{t.standings}</button>
+                                        </div>
                                     </div>
 
-                                    {/* Match Rows */}
-                                    <div className="divide-y divide-white/5">
+                                    {/* Match Rows - Google Styled */}
+                                    <div className="divide-y divide-white/[0.03]">
                                         {group.items.map(match => (
-                                            <div key={match.id} className="group hover:bg-[#2a2f35] transition-colors cursor-pointer px-4 py-3 flex items-center gap-3 md:gap-4">
+                                            <div key={match.id} className="group hover:bg-white/[0.02] transition-colors cursor-pointer px-4 py-4">
+                                                <div className="grid grid-cols-[80px_1fr_auto] md:grid-cols-[100px_1fr_150px] items-center gap-2">
 
-                                                {/* Status / Time */}
-                                                <div className="w-12 md:w-14 flex-shrink-0 text-center">
-                                                    {match.status === 'LIVE' ? (
-                                                        <div className="flex flex-col items-center">
-                                                            <span className="text-[9px] font-black text-[#ff3c00] animate-pulse">LIVE</span>
-                                                            <span className="text-xs font-bold text-[#ff3c00]">{match.time}'</span>
-                                                        </div>
-                                                    ) : match.status === 'FINISHED' ? (
-                                                        <span className="text-xs font-bold text-gray-500">FT</span>
-                                                    ) : (
-                                                        <span className="text-xs font-bold text-gray-400">{convertToIstanbulTime(match.time)}</span>
-                                                    )}
-                                                </div>
-
-                                                {/* Teams & Scores */}
-                                                <div className="flex-1 grid grid-cols-[1fr_auto_1fr] items-center gap-2 md:gap-6">
-                                                    {/* Home */}
-                                                    <div className={`flex items-center justify-end gap-2 md:gap-3 ${match.score_home > match.score_away ? 'font-bold text-white' : 'text-gray-300'}`}>
-                                                        <span className="text-sm text-right leading-tight line-clamp-1">{match.home}</span>
-                                                        <Shield size={14} className="text-gray-600 flex-shrink-0" />
-                                                    </div>
-
-                                                    {/* Score */}
-                                                    <div className="bg-[#121619] text-white font-bold font-mono text-sm px-2 py-1 rounded min-w-[40px] text-center tracking-widest border border-white/5">
-                                                        {match.status === 'UPCOMING' ? '-:-' : match.score}
-                                                    </div>
-
-                                                    {/* Away */}
-                                                    <div className={`flex items-center justify-start gap-2 md:gap-3 ${match.score_away > match.score_home ? 'font-bold text-white' : 'text-gray-300'}`}>
-                                                        <Shield size={14} className="text-gray-600 flex-shrink-0" />
-                                                        <span className="text-sm text-left leading-tight line-clamp-1">{match.away}</span>
-                                                    </div>
-                                                </div>
-
-                                                {/* Odds Column (Right Side) */}
-                                                {(filter === 'ODDS' || match.odds) && (
-                                                    <div className="hidden md:flex gap-1 ml-4 border-l border-white/5 pl-4">
-                                                        {match.odds ? (
+                                                    {/* Time / Status Container */}
+                                                    <div className="flex flex-col items-center justify-center text-center border-r border-white/5 pr-2">
+                                                        {match.status === 'LIVE' ? (
                                                             <>
-                                                                <div className="flex flex-col items-center justify-center bg-[#23282d] hover:bg-[#32383e] w-10 h-8 rounded text-[10px] text-gray-300 font-bold cursor-pointer transition-colors border border-white/5">
-                                                                    <span className="text-[8px] opacity-50">1</span>
-                                                                    {match.odds["1"]}
-                                                                </div>
-                                                                <div className="flex flex-col items-center justify-center bg-[#23282d] hover:bg-[#32383e] w-10 h-8 rounded text-[10px] text-gray-300 font-bold cursor-pointer transition-colors border border-white/5">
-                                                                    <span className="text-[8px] opacity-50">X</span>
-                                                                    {match.odds["X"]}
-                                                                </div>
-                                                                <div className="flex flex-col items-center justify-center bg-[#23282d] hover:bg-[#32383e] w-10 h-8 rounded text-[10px] text-gray-300 font-bold cursor-pointer transition-colors border border-white/5">
-                                                                    <span className="text-[8px] opacity-50">2</span>
-                                                                    {match.odds["2"]}
-                                                                </div>
+                                                                <span className="text-[10px] font-black text-red-500 animate-pulse tracking-tighter">LIVE</span>
+                                                                <span className="text-xs font-black text-white">{match.time}'</span>
+                                                            </>
+                                                        ) : match.status === 'FINISHED' ? (
+                                                            <>
+                                                                <span className="text-[10px] font-bold text-gray-500">FT</span>
+                                                                <span className="text-[10px] text-gray-600 mt-1 font-mono">{match.score}</span>
                                                             </>
                                                         ) : (
-                                                            <div className="text-[9px] text-gray-600 italic">No Odds</div>
+                                                            <>
+                                                                <Clock size={12} className="text-gray-600 mb-1" />
+                                                                <span className="text-xs font-bold text-gray-400">{convertToIstanbulTime(match.time)}</span>
+                                                            </>
                                                         )}
                                                     </div>
-                                                )}
 
+                                                    {/* Match Content */}
+                                                    <div className="flex flex-col gap-3 px-2 md:px-6">
+                                                        {/* Home Team */}
+                                                        <div className="flex items-center justify-between">
+                                                            <div className="flex items-center gap-3">
+                                                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-white/5 to-white/10 flex items-center justify-center border border-white/5 shadow-inner">
+                                                                    <Shield size={16} className="text-gray-400" />
+                                                                </div>
+                                                                <span className={`text-sm md:text-base ${match.score_home > match.score_away ? 'font-bold text-white' : 'text-gray-300'}`}>
+                                                                    {match.home}
+                                                                </span>
+                                                            </div>
+                                                            {match.status !== 'UPCOMING' && (
+                                                                <span className={`text-lg font-mono ${match.score_home > match.score_away ? 'text-emerald-400 font-black' : 'text-white'}`}>
+                                                                    {match.score_home}
+                                                                </span>
+                                                            )}
+                                                        </div>
+
+                                                        {/* Away Team */}
+                                                        <div className="flex items-center justify-between">
+                                                            <div className="flex items-center gap-3">
+                                                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-white/5 to-white/10 flex items-center justify-center border border-white/5 shadow-inner">
+                                                                    <Shield size={16} className="text-gray-400" />
+                                                                </div>
+                                                                <span className={`text-sm md:text-base ${match.score_away > match.score_home ? 'font-bold text-white' : 'text-gray-300'}`}>
+                                                                    {match.away}
+                                                                </span>
+                                                            </div>
+                                                            {match.status !== 'UPCOMING' && (
+                                                                <span className={`text-lg font-mono ${match.score_away > match.score_home ? 'text-emerald-400 font-black' : 'text-white'}`}>
+                                                                    {match.score_away}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Odds / Actions (Desktop) */}
+                                                    <div className="hidden md:flex flex-col gap-2 scale-90 origin-right">
+                                                        {match.odds ? (
+                                                            <div className="flex gap-1">
+                                                                <div className="h-10 w-12 bg-white/5 rounded flex flex-col items-center justify-center text-[10px] font-bold text-gray-400 border border-white/5 hover:bg-emerald-500 hover:text-white hover:border-emerald-500 transition-all">
+                                                                    <span className="opacity-50 text-[8px]">1</span>{match.odds["1"]}
+                                                                </div>
+                                                                <div className="h-10 w-12 bg-white/5 rounded flex flex-col items-center justify-center text-[10px] font-bold text-gray-400 border border-white/5 hover:bg-emerald-500 hover:text-white hover:border-emerald-500 transition-all">
+                                                                    <span className="opacity-50 text-[8px]">X</span>{match.odds["X"]}
+                                                                </div>
+                                                                <div className="h-10 w-12 bg-white/5 rounded flex flex-col items-center justify-center text-[10px] font-bold text-gray-400 border border-white/5 hover:bg-emerald-500 hover:text-white hover:border-emerald-500 transition-all">
+                                                                    <span className="opacity-50 text-[8px]">2</span>{match.odds["2"]}
+                                                                </div>
+                                                            </div>
+                                                        ) : (
+                                                            <div className="text-[10px] uppercase tracking-widest text-gray-600 font-bold border border-white/5 px-2 py-1 rounded">No Odds</div>
+                                                        )}
+                                                    </div>
+
+                                                </div>
                                             </div>
                                         ))}
                                     </div>

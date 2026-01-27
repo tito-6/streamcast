@@ -21,11 +21,11 @@ interface StreamDetails {
 
 const LivePage = () => {
   const [stream, setStream] = useState<StreamDetails>({
-    title: "Live Championship 2024",
-    description: "The biggest event of the year is live now! Watch the top teams compete for glory.",
+    title: "StreamCast Live",
+    description: "Welcome to StreamCast. Waiting for live broadcast...",
     is_live: false,
     viewer_count: 0,
-    stream_key: 'live_42a01020-3041-420b-b180-4f7ced842dc4' // Default to user key
+    stream_key: ''
   });
   const [loading, setLoading] = useState(true);
 
@@ -58,7 +58,7 @@ const LivePage = () => {
               offline_banner_url: liveStream.offline_banner_url,
               pre_match_details: liveStream.pre_match_details,
               post_match_details: liveStream.post_match_details,
-              stream_key: 'live_42a01020-3041-420b-b180-4f7ced842dc4', // User provided key
+              stream_key: liveStream.stream_key,
               language: liveStream.language
             });
           }
@@ -122,9 +122,12 @@ const LivePage = () => {
           {/* Ad Space - Top */}
           <AdSpace reference="live_top" className="container mx-auto max-w-4xl" />
 
-          {/* Video Player Container */}
           <div className="mb-8">
-            <StreamPlayer streamId={stream.stream_key || 'test'} lang="ar" />
+            <StreamPlayer
+              streamId={stream.stream_key || ''}
+              lang={stream.language === 'ar' ? 'ar' : 'en'}
+              poster={stream.offline_banner_url || stream.banner_url || stream.thumbnail_url}
+            />
           </div>
 
           {/* Details */}

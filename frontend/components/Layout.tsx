@@ -34,6 +34,7 @@ const Layout: React.FC<LayoutProps> = ({
         <meta charSet="utf-8" />
         <link rel="icon" href="/favicon.svg" />
         <link rel="canonical" href="https://sportevent.online" />
+        <meta name="google-site-verification" content="google4aedf3c82440818d" />
 
         {/* Performance Optimizations */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />

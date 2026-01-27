@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { MdArticle, MdAccessTime } from 'react-icons/md';
 import { format } from 'date-fns';
 import { ar, enUS, tr } from 'date-fns/locale';
+import { getImageUrl } from '../../utils/image';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { translations } from '../../utils/translations';
 
@@ -26,17 +27,6 @@ const ArticlesPage = () => {
     const [loading, setLoading] = useState(true);
     const { language } = useLanguage();
     const t = translations[language];
-
-    // Helper for safe image URL
-    const getImageUrl = (url: string) => {
-        if (!url) return null;
-        if (url.startsWith('data:')) return url;
-        if (url.startsWith('http') && !url.includes('localhost')) return url;
-        if (url.includes('localhost')) {
-            return url.replace('http://localhost:8080/uploads', '/uploads');
-        }
-        return `/uploads/${url}`; // Fallback if just filename
-    };
 
     useEffect(() => {
         fetch('/api/posts')

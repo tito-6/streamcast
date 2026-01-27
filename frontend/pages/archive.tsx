@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { MdPlayCircleOutline, MdCalendarToday, MdOutlineSportsEsports } from 'react-icons/md';
 import Link from 'next/link';
 import { format } from 'date-fns';
+import { getImageUrl } from '../utils/image';
 import { ar } from 'date-fns/locale';
 
 interface Stream {
@@ -24,7 +25,7 @@ const ArchivePage = () => {
     useEffect(() => {
         const fetchStreams = async () => {
             try {
-                const res = await fetch('http://localhost:8080/api/streams'); // In prod use env var
+                const res = await fetch('/api/streams'); // In prod use env var
                 const data = await res.json();
                 // Filter for non-live streams
                 if (data.data) {
@@ -63,7 +64,7 @@ const ArchivePage = () => {
                                     <div className="relative aspect-video">
                                         {stream.thumbnail_url ? (
                                             <Image
-                                                src={stream.thumbnail_url.startsWith('http') ? stream.thumbnail_url : `http://localhost:8080/${stream.thumbnail_url}`}
+                                                src={getImageUrl(stream.thumbnail_url)}
                                                 alt={stream.title}
                                                 fill
                                                 className="object-cover transition-transform group-hover:scale-105"

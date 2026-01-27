@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { ChevronDown, Trophy, Users, Calendar, BarChart2, Filter, AlertCircle } from 'lucide-react';
+import { getImageUrl } from '../utils/image';
 
 // --- Types ---
 interface Match {
@@ -120,7 +121,7 @@ const SportsWidget: React.FC<SportsWidgetProps> = ({ league, globalDate }) => {
 
     const getLogo = (url: string | undefined, id: string | number) => {
         if (!url || imgError[id]) return "https://upload.wikimedia.org/wikipedia/commons/d/d3/Soccerball.svg";
-        return url;
+        return getImageUrl(url);
     };
 
     // --- Sub-Components ---
@@ -269,7 +270,7 @@ const SportsWidget: React.FC<SportsWidgetProps> = ({ league, globalDate }) => {
                             <div className="flex items-center gap-3">
                                 <span className="text-lg font-black text-gray-700 w-4">{p.rank}</span>
                                 <div className="w-8 h-8 rounded-full bg-gray-800 overflow-hidden">
-                                    {p.image && <img src={p.image} className="w-full h-full object-cover" />}
+                                    {p.image && <img src={getImageUrl(p.image)} className="w-full h-full object-cover" />}
                                 </div>
                                 <div>
                                     <div className="text-sm font-bold text-white">{p.name}</div>
@@ -291,7 +292,7 @@ const SportsWidget: React.FC<SportsWidgetProps> = ({ league, globalDate }) => {
                             <div className="flex items-center gap-3">
                                 <span className="text-lg font-black text-gray-700 w-4">{p.rank}</span>
                                 <div className="w-8 h-8 rounded-full bg-gray-800 overflow-hidden">
-                                    {p.image && <img src={p.image} className="w-full h-full object-cover" />}
+                                    {p.image && <img src={getImageUrl(p.image)} className="w-full h-full object-cover" />}
                                 </div>
                                 <div>
                                     <div className="text-sm font-bold text-white">{p.name}</div>
@@ -312,7 +313,7 @@ const SportsWidget: React.FC<SportsWidgetProps> = ({ league, globalDate }) => {
                 <div key={i} className="bg-[#1e1e1e] border border-white/5 p-3 rounded-lg hover:border-emerald-500/50 transition-all cursor-pointer group">
                     <div className="aspect-square rounded-lg bg-black/20 mb-3 overflow-hidden relative">
                         {p.image ? (
-                            <img src={p.image} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                            <img src={getImageUrl(p.image)} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                         ) : (
                             <Users className="text-gray-700" size={32} />
                         )}
@@ -351,7 +352,7 @@ const SportsWidget: React.FC<SportsWidgetProps> = ({ league, globalDate }) => {
                             <img
                                 src={
                                     league.includes("Premier") ? "https://upload.wikimedia.org/wikipedia/en/f/f2/Premier_League_Logo.svg" :
-                                        league.includes("Liga") ? "https://upload.wikimedia.org/wikipedia/commons/ thumb/0/0f/LaLiga_logo_2023.svg/1200px-LaLiga_logo_2023.svg.png" :
+                                        league.includes("Liga") ? "https://upload.wikimedia.org/wikipedia/commons/0/0f/LaLiga_logo_2023.svg" :
                                             "/placeholder.png"
                                 }
                                 className="w-full h-full object-contain"
@@ -426,7 +427,7 @@ const SportsWidget: React.FC<SportsWidgetProps> = ({ league, globalDate }) => {
                                             <div key={i} className="flex items-center justify-between group cursor-pointer">
                                                 <div className="flex items-center gap-3">
                                                     <div className="w-8 h-8 rounded-full bg-black/40 overflow-hidden ring-1 ring-white/10 group-hover:ring-emerald-500 transition-all">
-                                                        {p.image && <img src={p.image} className="w-full h-full object-cover" />}
+                                                        {p.image && <img src={getImageUrl(p.image)} className="w-full h-full object-cover" />}
                                                     </div>
                                                     <div>
                                                         <div className="text-xs font-bold text-white group-hover:text-emerald-400 transition-colors">{p.name}</div>

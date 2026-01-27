@@ -5,6 +5,7 @@ import { useRouter } from 'next/router';
 import { MdEvent, MdLocationOn, MdAccessTime, MdArrowBack, MdTv } from 'react-icons/md';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
+import { getImageUrl } from '../../utils/image';
 
 interface Event {
     id: number;
@@ -41,7 +42,7 @@ const EventDetailsPage = ({ event }: { event: Event }) => {
                 <div className="absolute top-0 left-0 w-full h-[50vh] overflow-hidden z-0">
                     {event.thumbnail ? (
                         <Image
-                            src={event.thumbnail && event.thumbnail.startsWith('data:') ? event.thumbnail : (event.thumbnail?.startsWith('http') ? event.thumbnail : `/uploads/${event.thumbnail}`)}
+                            src={getImageUrl(event.thumbnail)}
                             alt="Background"
                             fill
                             className="object-cover opacity-20 blur-xl"
@@ -102,7 +103,7 @@ const EventDetailsPage = ({ event }: { event: Event }) => {
                                     <div className="relative aspect-video rounded-xl overflow-hidden border border-gray-700 shadow-lg">
                                         {event.thumbnail ? (
                                             <Image
-                                                src={event.thumbnail && event.thumbnail.startsWith('data:') ? event.thumbnail : (event.thumbnail?.startsWith('http') ? event.thumbnail : `/uploads/${event.thumbnail}`)}
+                                                src={getImageUrl(event.thumbnail)}
                                                 alt="Thumbnail"
                                                 fill
                                                 className="object-cover"

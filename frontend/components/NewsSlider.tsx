@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
+import { getImageUrl } from '../utils/image';
 
 interface Post {
     id: number;
@@ -44,14 +45,6 @@ const NewsSlider: React.FC<NewsSliderProps> = ({ lang }) => {
         return () => resetTimeout();
     }, [currentIndex, posts]);
 
-    const getImageUrl = (url: string) => {
-        if (!url) return 'https://via.placeholder.com/800x400';
-        if (url.startsWith('http') && !url.includes('localhost')) return url;
-        if (url.includes('localhost')) {
-            return url.replace('http://localhost:8080/uploads', '/uploads');
-        }
-        return `/uploads/${url}`;
-    };
 
     if (posts.length === 0) return null;
 

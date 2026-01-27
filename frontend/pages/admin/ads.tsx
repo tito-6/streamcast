@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Trash2, Edit2, Save, X, DollarSign, Layout } from 'lucide-react';
 import AdminLayout from '../../components/AdminLayout';
 import ImageUpload from '../../components/ImageUpload';
+import { getImageUrl } from '../../utils/image';
 
 interface Ad {
     id: number;
@@ -167,7 +168,7 @@ const AdsPage = () => {
                             <div key={ad.id} className={`bg-gray-900 border border-gray-800 p-4 rounded-xl flex gap-4 group hover:border-emerald-energy transition-colors items-center ${!ad.is_active && 'opacity-50'}`}>
                                 {ad.image_url ? (
                                     <div className="w-24 h-16 bg-gray-800 rounded-lg overflow-hidden shrink-0">
-                                        <img src={ad.image_url} className="w-full h-full object-cover" />
+                                        <img src={getImageUrl(ad.image_url)} className="w-full h-full object-cover" />
                                     </div>
                                 ) : (
                                     <div className="w-24 h-16 bg-gray-800 rounded-lg flex items-center justify-center shrink-0 text-emerald-500 font-mono text-xs p-2 overflow-hidden">

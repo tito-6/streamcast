@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Layout from '../components/Layout';
 import { MdSportsSoccer, MdSportsBasketball, MdSportsTennis, MdSportsMma } from 'react-icons/md';
+import { getImageUrl } from '../utils/image';
 
 interface Stream {
   id: number;
@@ -16,7 +17,7 @@ export default function SportsPage() {
   const [filter, setFilter] = useState('All');
 
   useEffect(() => {
-    fetch('http://localhost:8080/api/streams')
+    fetch('/api/streams')
       .then(res => res.json())
       .then(json => {
         if (json.data) setStreams(json.data);
@@ -56,7 +57,7 @@ export default function SportsPage() {
           {filteredStreams.map(stream => (
             <div key={stream.id} className="glass-panel group rounded-xl overflow-hidden hover:border-emerald-energy transition-all">
               <div className="relative aspect-video bg-gray-800">
-                <img src={stream.thumbnail_url || 'https://via.placeholder.com/400'} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                <img src={getImageUrl(stream.thumbnail_url)} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                 <div className="absolute top-2 left-2 bg-black/60 backdrop-blur px-2 py-1 rounded text-xs font-bold text-white">
                   {stream.sport_category}
                 </div>

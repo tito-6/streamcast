@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Image, Search, Plus, Save, Edit2, X, Trash2, CheckCircle, Power } from 'lucide-react'; // Imports fixed
+import { Image, Search, Plus, Save, Edit2, X, Trash2, CheckCircle, Power } from 'lucide-react';
 import AdminLayout from '../../components/AdminLayout';
 import ImageUpload from '../../components/ImageUpload';
+import { getImageUrl } from '../../utils/image';
 
 interface Banner {
     id?: number;
@@ -52,7 +53,7 @@ const ContentPage = () => {
         e.preventDefault();
         try {
             const res = await fetch('/api/content/banners', {
-                method: 'POST', // Backend handles update if ID exists
+                method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(form)
             });
@@ -151,7 +152,7 @@ const ContentPage = () => {
                             {banners.map((banner) => (
                                 <div key={banner.id} className="bg-gray-900 border border-gray-800 p-4 rounded-xl flex gap-4 items-center group relative hover:border-emerald-energy transition-all">
                                     <div className="w-24 h-16 bg-gray-800 rounded-lg overflow-hidden shrink-0">
-                                        <img src={banner.image_url} className="w-full h-full object-cover" alt="" />
+                                        <img src={getImageUrl(banner.image_url)} className="w-full h-full object-cover" alt="" />
                                     </div>
                                     <div className="flex-1">
                                         <h4 className="font-bold text-white">{banner.title_en}</h4>
@@ -197,5 +198,3 @@ const ContentPage = () => {
 };
 
 export default ContentPage;
-
-

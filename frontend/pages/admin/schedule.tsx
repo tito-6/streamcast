@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, Plus, Trash2, Edit2, Save, X, Clock, Shield } from 'lucide-react';
 import AdminLayout from '../../components/AdminLayout';
+import { getImageUrl } from '../../utils/image';
 
 import ImageUpload from '../../components/ImageUpload';
 import DatePicker from "react-datepicker";
@@ -239,7 +240,7 @@ const EventsPage = () => {
                             <div key={event.id} className="bg-gray-900 border border-gray-800 p-4 rounded-xl flex gap-4 group hover:border-emerald-energy transition-colors items-center">
                                 {event.thumbnail ? (
                                     <div className="w-16 h-16 bg-gray-800 rounded-lg overflow-hidden shrink-0">
-                                        <img src={event.thumbnail} className="w-full h-full object-cover" />
+                                        <img src={getImageUrl(event.thumbnail)} className="w-full h-full object-cover" />
                                     </div>
                                 ) : (
                                     <div className="p-3 bg-gray-800 rounded-lg text-emerald-500 shrink-0">

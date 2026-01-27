@@ -34,11 +34,8 @@ func UploadFile(c *gin.Context) {
 		return
 	}
 
-	// Return public URL (assuming server runs on localhost:8080)
-	// In production config, this base URL should be env var
-	publicURL := fmt.Sprintf("http://localhost:8080/uploads/%s", filename)
+	// Return relative URL for portability
+	publicURL := fmt.Sprintf("/uploads/%s", filename)
 
 	c.JSON(http.StatusOK, gin.H{"url": publicURL})
 }
-
-

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Layout from './Layout';
 import { BiTimeFive, BiUser, BiInfoCircle } from 'react-icons/bi';
+import { getImageUrl } from '../utils/image';
 import 'video.js/dist/video-js.css';
 
 interface LiveSportsViewProps {
@@ -43,7 +44,7 @@ const LiveSportsView: React.FC<LiveSportsViewProps> = ({ category, lang = 'ar' }
         const fetchStatus = async () => {
             try {
                 // Fetch from Backend API (using proxy or direct if CORS allowed, assuming proxy for now or localhost)
-                const res = await fetch('http://localhost:8080/api/status');
+                const res = await fetch('/api/status');
                 const data = await res.json();
                 setStatus(data);
             } catch (error) {
@@ -92,7 +93,7 @@ const LiveSportsView: React.FC<LiveSportsViewProps> = ({ category, lang = 'ar' }
                             </h3>
                             {getBannerImage(status.streamDescription) && (
                                 <div className="mb-4 rounded-xl overflow-hidden aspect-video relative">
-                                    <img src={getBannerImage(status.streamDescription)!} alt="Match Banner" className="object-cover w-full h-full" />
+                                    <img src={getImageUrl(getBannerImage(status.streamDescription)!)} alt="Match Banner" className="object-cover w-full h-full" />
                                 </div>
                             )}
                             <div className="text-white/80 whitespace-pre-wrap">
@@ -121,7 +122,7 @@ const LiveSportsView: React.FC<LiveSportsViewProps> = ({ category, lang = 'ar' }
                     {getBannerImage(status.streamDescription) && (
                         <div className="w-full h-64 md:h-96 rounded-3xl overflow-hidden mb-8 relative shadow-2xl geometric-border">
                             <img
-                                src={getBannerImage(status.streamDescription)!}
+                                src={getImageUrl(getBannerImage(status.streamDescription)!)}
                                 alt="Match Banner"
                                 className="w-full h-full object-cover"
                             />
@@ -140,7 +141,7 @@ const LiveSportsView: React.FC<LiveSportsViewProps> = ({ category, lang = 'ar' }
                             <div className="aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl border border-white/10 relative group">
                                 {/* Iframe to Owncast Embed or HLS Player. Using Embed for simplicity and native features */}
                                 <iframe
-                                    src="http://localhost:8081/embed/video"
+                                    src="/embed/video"
                                     title="Live Stream"
                                     className="w-full h-full"
                                     allowFullScreen
@@ -190,7 +191,7 @@ const LiveSportsView: React.FC<LiveSportsViewProps> = ({ category, lang = 'ar' }
                             {/* Chat Embed (Optional) */}
                             <div className="h-[400px] bg-cosmic-navy/50 rounded-2xl overflow-hidden border border-white/10">
                                 <iframe
-                                    src="http://localhost:8081/embed/chat/readwrite"
+                                    src="/embed/chat/readwrite"
                                     className="w-full h-full"
                                 />
                             </div>

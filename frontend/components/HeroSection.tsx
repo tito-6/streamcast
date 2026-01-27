@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { MdPlayArrow, MdPeople } from 'react-icons/md';
 import { MdLiveTv } from 'react-icons/md';
+import { getImageUrl } from '../utils/image';
 
 interface HeroSectionProps {
   lang: 'ar' | 'en' | 'tr';
@@ -99,7 +100,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ lang }) => {
               {/* Stream Thumbnail */}
               <div className="relative aspect-video rounded-lg overflow-hidden bg-cosmic-navy mb-4">
                 <img
-                  src={data.image}
+                  src={getImageUrl(data.image)}
                   alt="Featured Stream"
                   className="w-full h-full object-cover opacity-90 group-hover:scale-110 transition-transform duration-500"
                 />
@@ -120,5 +121,3 @@ const HeroSection: React.FC<HeroSectionProps> = ({ lang }) => {
 };
 
 export default HeroSection;
-
-

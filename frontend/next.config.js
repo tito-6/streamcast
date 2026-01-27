@@ -2,6 +2,7 @@ const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
   images: {
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: 'https',
@@ -27,6 +28,14 @@ const nextConfig = {
       {
         source: '/api/:path*',
         destination: 'http://localhost:8080/api/:path*',
+      },
+      {
+        source: '/uploads/:path*',
+        destination: 'http://localhost:8080/uploads/:path*',
+      },
+      {
+        source: '/embed/:path*',
+        destination: 'http://localhost:8081/embed/:path*',
       },
     ]
   },

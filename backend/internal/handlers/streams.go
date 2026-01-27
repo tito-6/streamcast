@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"log"
 	"net/http"
 	"streamcast-backend/internal/models"
 	"streamcast-backend/internal/rtmp"
@@ -32,6 +33,10 @@ func CreateStream(c *gin.Context) {
 	input.PlaybackID = "hls-" + key[:8]
 
 	models.DB.Create(&input)
+	if input.ID == 0 {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create stream in database"})
+		return
+	}
 	c.JSON(http.StatusOK, gin.H{"data": input})
 }
 
@@ -49,7 +54,8 @@ func UpdateStream(c *gin.Context) {
 		return
 	}
 
-	// Dynamic update of all allowed fields
+	// Check for transition from Live to Offline
+	wasLive := stream.IsLive
 	stream.Title = input.Title
 	stream.Description = input.Description
 	stream.SportCategory = input.SportCategory
@@ -58,9 +64,18 @@ func UpdateStream(c *gin.Context) {
 	stream.OfflineBannerURL = input.OfflineBannerURL
 	stream.PreMatchDetails = input.PreMatchDetails
 	stream.PostMatchDetails = input.PostMatchDetails
-
-	// Explicitly set IsLive as it's boolean
 	stream.IsLive = input.IsLive
+
+	// If we changed visibility, notify RTMP server to start/stop transcoding
+	if wasLive != stream.IsLive {
+		rtmp.EnsureTranscoding(stream.StreamKey, stream.IsLive)
+		if !stream.IsLive {
+			stream.IngestStatus = "offline"
+		} else {
+			// If we manually set it to live, ingest status might still be receiving if OBS is on
+			// Ingest status will be updated by the RTMP server normally
+		}
+	}
 
 	models.DB.Save(&stream)
 	c.JSON(http.StatusOK, gin.H{"data": stream})
@@ -68,7 +83,19 @@ func UpdateStream(c *gin.Context) {
 
 func DeleteStream(c *gin.Context) {
 	id := c.Param("id")
-	models.DB.Delete(&models.Stream{}, id)
+	var stream models.Stream
+	// Fetch the stream first to get the key for cleanup
+	if err := models.DB.First(&stream, id).Error; err == nil {
+		log.Printf("Deleting stream %s, killing active processes for key %s", id, stream.StreamKey)
+		rtmp.KillStream(stream.StreamKey)
+	} else {
+		log.Printf("Stream %s not found in DB, but proceeding with batch delete to be safe", id)
+	}
+
+	if err := models.DB.Delete(&models.Stream{}, id).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete stream"})
+		return
+	}
 	c.JSON(http.StatusOK, gin.H{"data": true})
 }
 
@@ -94,8 +121,8 @@ func StopStream(c *gin.Context) {
 	stream.IngestStatus = "stopped"
 	stream.UpdatedAt = models.DB.NowFunc()
 
-	// In a real app with joy4/avutil, we would also find the active connection in a map and close it.
-	// For now, updating the DB will trigger the frontend to stop playback.
+	// Notify RTMP server to stop transcoding
+	rtmp.EnsureTranscoding(stream.StreamKey, false)
 
 	models.DB.Save(&stream)
 	c.JSON(http.StatusOK, gin.H{"data": stream, "message": "Stream stopped successfully"})

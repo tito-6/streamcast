@@ -17,7 +17,7 @@ func main() {
 	models.ConnectDatabase()
 
 	// 2. Start RTMP Server
-	rtmpServer := rtmp.NewRtmpServer("1935")
+	rtmpServer := rtmp.NewRtmpServer(":1935")
 	rtmpServer.Start()
 	defer rtmpServer.Stop()
 

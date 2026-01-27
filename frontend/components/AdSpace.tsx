@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { getImageUrl } from '../utils/image';
 
 interface Ad {
     id: number;
@@ -51,7 +52,7 @@ const AdSpace: React.FC<AdSpaceProps> = ({ reference, className }) => {
                             margin: '0 auto' // Center fixed size ads
                         } : undefined}>
                         <img
-                            src={ad.image_url}
+                            src={getImageUrl(ad.image_url)}
                             alt="Advertisement"
                             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                         />

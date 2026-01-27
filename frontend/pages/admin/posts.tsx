@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FileText, Plus, Trash2, Edit2, Save, X } from 'lucide-react';
 import AdminLayout from '../../components/AdminLayout';
 import ImageUpload from '../../components/ImageUpload';
+import { getImageUrl } from '../../utils/image';
 
 interface Post {
     id: number;
@@ -197,7 +198,7 @@ const PostsPage = () => {
                         {posts.map(post => (
                             <div key={post.id} className="bg-gray-900 border border-gray-800 p-4 rounded-xl flex gap-4 group hover:border-emerald-energy transition-colors">
                                 <div className="w-32 h-24 bg-gray-800 rounded-lg overflow-hidden shrink-0">
-                                    <img src={post.image_url || 'https://via.placeholder.com/150'} className="w-full h-full object-cover" alt="" />
+                                    <img src={getImageUrl(post.image_url) || 'https://via.placeholder.com/150'} className="w-full h-full object-cover" alt="" />
                                 </div>
                                 <div className="flex-1">
                                     <div className="flex justify-between items-start">
@@ -225,5 +226,3 @@ const PostsPage = () => {
 };
 
 export default PostsPage;
-
-

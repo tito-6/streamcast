@@ -8,6 +8,7 @@ import { ar, enUS, tr } from 'date-fns/locale';
 
 import { useLanguage } from '../../contexts/LanguageContext';
 import { translations } from '../../utils/translations';
+import { getImageUrl } from '../../utils/image';
 
 interface Post {
     id: number;
@@ -44,17 +45,6 @@ const PostDetailsPage = ({ post }: { post: Post }) => {
     const router = useRouter();
     const { language } = useLanguage();
     const t = translations[language];
-
-    // Helper for safe image URL
-    const getImageUrl = (url: string) => {
-        if (!url) return null;
-        if (url.startsWith('data:')) return url;
-        if (url.startsWith('http') && !url.includes('localhost')) return url;
-        if (url.includes('localhost')) {
-            return url.replace('http://localhost:8080/uploads', '/uploads');
-        }
-        return `/uploads/${url}`; // Fallback if just filename
-    };
 
     if (router.isFallback) {
         return <div className="text-white text-center py-20">{t.loading}</div>;

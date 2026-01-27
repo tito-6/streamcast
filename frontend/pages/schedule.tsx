@@ -16,6 +16,7 @@ interface ScheduledMatch {
   broadcaster?: string;
 }
 
+import { getImageUrl } from '../utils/image';
 import { useLanguage } from '../contexts/LanguageContext';
 
 export default function SchedulePage() {
@@ -32,7 +33,7 @@ export default function SchedulePage() {
   const t = translations[lang] || translations['ar'];
 
   useEffect(() => {
-    fetch('http://localhost:8080/api/events')
+    fetch('/api/events')
       .then(res => res.json())
       .then(json => {
         if (json.data) {
@@ -90,7 +91,7 @@ export default function SchedulePage() {
                     <div className="lg:w-1/3">
                       <div className="relative aspect-video rounded-lg overflow-hidden bg-cosmic-navy flex items-center justify-center">
                         {match.thumbnail ? (
-                          <img src={match.thumbnail} alt={title} className="w-full h-full object-cover" />
+                          <img src={getImageUrl(match.thumbnail)} alt={title} className="w-full h-full object-cover" />
                         ) : (
                           <>
                             <SportIcon className="text-6xl text-emerald-energy/20" />

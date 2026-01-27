@@ -26,6 +26,8 @@ import { translations } from '../utils/translations';
 import { format } from 'date-fns';
 import { ar, enUS, tr } from 'date-fns/locale';
 
+import { getImageUrl } from '../utils/image';
+
 export default function HomePage() {
   const { language } = useLanguage();
   const t = translations[language];
@@ -50,16 +52,6 @@ export default function HomePage() {
     }
     fetchData();
   }, []);
-
-  const getImageUrl = (url: string) => {
-    if (!url) return null;
-    if (url.startsWith('data:')) return url;
-    if (url.startsWith('http') && !url.includes('localhost')) return url;
-    if (url.includes('localhost')) {
-      return url.replace('http://localhost:8080/uploads', '/uploads');
-    }
-    return `/uploads/${url}`;
-  };
 
   return (
     <Layout lang={language}>
