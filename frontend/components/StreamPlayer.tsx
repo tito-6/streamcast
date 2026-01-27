@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { FiMaximize, FiVolume2, FiVolumeX, FiSettings, FiPlay, FiPause } from 'react-icons/fi';
+import { FiMaximize, FiVolume2, FiVolumeX, FiSettings, FiPlay, FiPause, FiRefreshCw } from 'react-icons/fi';
 import { MdLiveTv } from 'react-icons/md';
 import Hls from 'hls.js';
 import { getImageUrl } from '../utils/image';
@@ -51,7 +51,8 @@ const StreamPlayer: React.FC<StreamPlayerProps> = ({ streamId, lang, poster }) =
       offline: 'البث غير متوفر حالياً',
       connecting: 'جاري الاتصال بالقناة...',
       statsTitle: 'إحصائيات العرض',
-      jumpToLive: 'العودة للبث المباشر'
+      jumpToLive: 'العودة للبث المباشر',
+      syncStream: 'تحديث البث'
     },
     en: {
       live: 'LIVE',
@@ -59,7 +60,8 @@ const StreamPlayer: React.FC<StreamPlayerProps> = ({ streamId, lang, poster }) =
       offline: 'Stream is Offline',
       connecting: 'Connecting to stream...',
       statsTitle: 'Stats for Nerds',
-      jumpToLive: 'Jump to Live'
+      jumpToLive: 'Jump to Live',
+      syncStream: 'Update Stream'
     }
   };
 
@@ -165,6 +167,20 @@ const StreamPlayer: React.FC<StreamPlayerProps> = ({ streamId, lang, poster }) =
     }
   };
 
+  const syncToLive = () => {
+    if (hlsRef.current && videoRef.current) {
+      // Logic to seek to the live edge
+      const livePosition = hlsRef.current.liveSyncPosition;
+      if (livePosition) {
+        videoRef.current.currentTime = livePosition;
+        videoRef.current.play();
+      } else {
+        // Fallback: seek to the end of duration
+        videoRef.current.currentTime = videoRef.current.duration;
+      }
+    }
+  };
+
   return (
     <div
       ref={containerRef}
@@ -245,18 +261,23 @@ const StreamPlayer: React.FC<StreamPlayerProps> = ({ streamId, lang, poster }) =
               {isMuted ? <FiVolumeX size={24} /> : <FiVolume2 size={24} />}
             </button>
 
-            {/* Premium Live Badge */}
+            {/* Premium Live Badge & Sync Button */}
             <div className="flex items-center gap-3">
-              <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-black tracking-tighter transition-all duration-500 ${stats.latency > 15 ? 'bg-white/10 text-white/40' : 'bg-red-600 text-white shadow-[0_0_15px_rgba(220,38,38,0.4)]'}`}>
+              <div
+                onClick={syncToLive}
+                className={`flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-black tracking-tighter transition-all duration-500 cursor-pointer hover:scale-105 active:scale-95 ${stats.latency > 15 ? 'bg-white/10 text-white/40' : 'bg-red-600 text-white shadow-[0_0_15px_rgba(220,38,38,0.4)]'}`}
+              >
                 <div className={`w-1.5 h-1.5 rounded-full ${stats.latency > 15 ? 'bg-white/20' : 'bg-white animate-pulse'}`}></div>
                 {t.live}
               </div>
-              {stats.latency > 15 && (
-                <button
-                  onClick={(e) => { e.stopPropagation(); hlsRef.current?.recoverMediaError(); }}
-                  className="text-[10px] font-bold text-white/40 hover:text-white underline decoration-emerald-500"
-                >{t.jumpToLive}</button>
-              )}
+
+              <button
+                onClick={syncToLive}
+                className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] font-bold hover:bg-emerald-500 hover:text-black transition-all group"
+              >
+                <FiRefreshCw size={12} className="group-hover:rotate-180 transition-transform duration-500" />
+                {t.syncStream}
+              </button>
             </div>
           </div>
 
