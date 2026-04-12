@@ -1,7 +1,7 @@
-import React, { ReactNode, useEffect } from 'react';
+import React, { ReactNode, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { LayoutDashboard, Radio, Users, Settings, LogOut, Menu, Image, Calendar, FileText, DollarSign, BarChart2, Database, Search, Activity } from 'lucide-react';
+import { LayoutDashboard, Radio, Users, Settings, LogOut, Menu, X, Image, Calendar, FileText, DollarSign, BarChart2, Database, Search, Activity } from 'lucide-react';
 
 interface AdminLayoutProps {
     children: ReactNode;
@@ -9,6 +9,7 @@ interface AdminLayoutProps {
 
 const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     const router = useRouter();
+    const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -16,6 +17,10 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
             router.push('/login');
         }
     }, [router]);
+
+    useEffect(() => {
+        setMobileNavOpen(false);
+    }, [router.pathname]);
 
     const navItems = [
         { name: 'Dashboard', path: '/admin', icon: LayoutDashboard },
@@ -86,10 +91,63 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
             {/* Main Content */}
             <div className="flex-1 flex flex-col h-full overflow-hidden relative z-10">
                 {/* Mobile Header */}
-                <header className="h-20 bg-midnight-black/80 backdrop-blur-md border-b border-white/10 flex items-center justify-between px-6 md:hidden">
+                <header className="h-20 bg-midnight-black/80 backdrop-blur-md border-b border-white/10 flex items-center justify-between px-6 md:hidden shrink-0">
                     <span className="text-xl font-bold text-white">StreamCast</span>
-                    <button className="text-emerald-energy"><Menu /></button>
+                    <button
+                        type="button"
+                        aria-expanded={mobileNavOpen}
+                        aria-label={mobileNavOpen ? 'Close menu' : 'Open menu'}
+                        onClick={() => setMobileNavOpen((o) => !o)}
+                        className="p-2 rounded-lg text-emerald-energy hover:bg-white/10"
+                    >
+                        {mobileNavOpen ? <X size={28} /> : <Menu size={28} />}
+                    </button>
                 </header>
+
+                {mobileNavOpen ? (
+                    <>
+                        <div
+                            className="fixed inset-0 bg-black/70 z-40 md:hidden"
+                            aria-hidden
+                            onClick={() => setMobileNavOpen(false)}
+                        />
+                        <nav
+                            className="fixed top-20 left-0 right-0 bottom-0 z-50 md:hidden overflow-y-auto bg-midnight-black border-t border-white/10 p-4 space-y-1"
+                            aria-label="Admin navigation"
+                        >
+                            {navItems.map((item) => {
+                                const Icon = item.icon;
+                                const isActive = router.pathname === item.path;
+                                return (
+                                    <Link
+                                        key={item.path}
+                                        href={item.path}
+                                        onClick={() => setMobileNavOpen(false)}
+                                        className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold ${
+                                            isActive
+                                                ? 'bg-gradient-oasis text-midnight-black'
+                                                : 'text-gray-300 hover:bg-white/10 hover:text-white'
+                                        }`}
+                                    >
+                                        <Icon size={20} className={isActive ? 'text-midnight-black' : 'text-emerald-energy'} />
+                                        {item.name}
+                                    </Link>
+                                );
+                            })}
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    localStorage.removeItem('token');
+                                    router.push('/login');
+                                }}
+                                className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-red-400 hover:bg-red-500/10 text-sm font-semibold mt-4"
+                            >
+                                <LogOut size={20} />
+                                Logout
+                            </button>
+                        </nav>
+                    </>
+                ) : null}
 
                 {/* Top Bar (Desktop) - Glassmorphism */}
                 <header className="hidden md:flex h-20 glass-panel border-b border-white/10 items-center justify-between px-8 mx-6 mt-4 rounded-xl">

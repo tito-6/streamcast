@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { Activity, Users, Signal, Play, Square, Wifi, Cpu, HardDrive } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import AdminLayout from '../../components/AdminLayout';
@@ -116,6 +117,18 @@ const AdminDashboard = () => {
                         subtext="Active Go Routines"
                     />
                 </div>
+
+                <Link
+                    href="/admin/sports-engine"
+                    className="block glass-panel p-5 rounded-2xl border border-emerald-500/25 hover:border-emerald-500/50 transition-colors"
+                >
+                    <p className="text-xs font-bold uppercase tracking-widest text-emerald-400 mb-1">Live scores</p>
+                    <h3 className="text-lg font-bold text-white">Sports Engine and data source</h3>
+                    <p className="text-sm text-gray-400 mt-1">
+                        Switch Flashscore vs LiveScore.com (GB/US), save, then reload the public live scores page.
+                    </p>
+                    <span className="inline-block mt-3 text-sm font-semibold text-emerald-400">Open settings →</span>
+                </Link>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Graph Area - Owncast Style */}

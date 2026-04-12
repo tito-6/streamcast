@@ -1,3 +1,7 @@
+// Same host as Next (VPS): point to local sports_engine. Override in production if needed.
+const SPORTS_ENGINE_ORIGIN =
+  process.env.SPORTS_ENGINE_INTERNAL_URL || 'http://127.0.0.1:8001'
+
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
@@ -12,18 +16,19 @@ const nextConfig = {
     domains: ['cdn.mock', 'localhost', 'assets.kooora.com', 'images.unsplash.com', 'aawsat.com'],
   },
   async rewrites() {
+    const se = SPORTS_ENGINE_ORIGIN.replace(/\/$/, '')
     return [
       {
         source: '/api/sports-engine/:path*',
-        destination: 'http://localhost:8001/:path*',
+        destination: `${se}/:path*`,
       },
       {
         source: '/api/scores',
-        destination: 'http://localhost:8001/api/scores',
+        destination: `${se}/api/scores`,
       },
       {
         source: '/api/chat',
-        destination: 'http://localhost:8001/api/chat',
+        destination: `${se}/api/chat`,
       },
       {
         source: '/api/:path*',
