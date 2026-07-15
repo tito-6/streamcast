@@ -123,8 +123,39 @@ _IG_PUBLIC_HEADERS = {
 }
 
 
+_PROFILE_DISK_CACHE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "ig_profile_cache.json")
+
+
+def _profile_disk_load(username: str) -> Optional[Dict[str, Any]]:
+    try:
+        import json
+        with open(_PROFILE_DISK_CACHE, "r", encoding="utf-8") as f:
+            allp = json.load(f)
+        return allp.get(username)
+    except Exception:
+        return None
+
+
+def _profile_disk_save(username: str, prof: Dict[str, Any]) -> None:
+    try:
+        import json
+        allp = {}
+        if os.path.isfile(_PROFILE_DISK_CACHE):
+            with open(_PROFILE_DISK_CACHE, "r", encoding="utf-8") as f:
+                allp = json.load(f)
+        allp[username] = prof
+        with open(_PROFILE_DISK_CACHE, "w", encoding="utf-8") as f:
+            json.dump(allp, f, ensure_ascii=False)
+    except Exception as e:
+        print(f"ig profile disk cache write error: {e}")
+
+
 async def fetch_ig_public_profile(username: str) -> Optional[Dict[str, Any]]:
-    """Bio, bio links and real counts from Instagram's public web profile API."""
+    """
+    Bio, bio links and real counts from Instagram's public web profile API.
+    Instagram rate-limits datacenter IPs, so the last good response is
+    persisted to disk and served whenever the live call fails.
+    """
     if not username:
         return None
     ck = f"ig_pub:{username}"
@@ -137,6 +168,8 @@ async def fetch_ig_public_profile(username: str) -> Optional[Dict[str, Any]]:
         async with httpx.AsyncClient() as client:
             resp = await client.get(url, params={"username": username}, headers=_IG_PUBLIC_HEADERS, timeout=15.0)
         data = resp.json() if resp.status_code == 200 else None
+        if resp.status_code != 200:
+            print(f"ig public profile HTTP {resp.status_code}")
     except Exception as e:
         print(f"ig public profile error: {e}")
         data = None
@@ -158,8 +191,16 @@ async def fetch_ig_public_profile(username: str) -> Optional[Dict[str, Any]]:
             "is_verified": bool(user.get("is_verified")),
             "full_name": user.get("full_name") or "",
         }
-    _cache_set(ck, out or {}, REFRESH_TTL)
-    return out
+
+    if out:
+        _profile_disk_save(username, out)
+        _cache_set(ck, out, REFRESH_TTL)
+        return out
+
+    # Live call failed (rate limit etc.): serve the last good copy and retry in 10 min.
+    stale = _profile_disk_load(username)
+    _cache_set(ck, stale or {}, 600)
+    return stale
 
 
 # ---------------------------------------------------------------------------

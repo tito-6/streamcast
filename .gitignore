@@ -29,3 +29,7 @@ ssh_access.txt
 __pycache__/
 *.pyc
 tsconfig.tsbuildinfo
+
+# Instagram runtime caches
+services/sports_engine/ig_media_cache/
+services/sports_engine/ig_profile_cache.json
