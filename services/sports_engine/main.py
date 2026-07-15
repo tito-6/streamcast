@@ -13,11 +13,14 @@ from datetime import datetime, timedelta, timezone
 import asyncio
 
 from livescore_com_api import fetch_livescore_com_scores
+import google_scores
+from zernio_instagram import router as zernio_instagram_router
 
 # Load Env
 load_dotenv(".env.local")
 
 app = FastAPI()
+app.include_router(zernio_instagram_router)
 
 app.add_middleware(
     CORSMiddleware,
@@ -30,8 +33,19 @@ app.add_middleware(
 # Redis Setup
 class MockRedis:
     def __init__(self): self.data = {}
-    def get(self, key): return self.data.get(key)
-    def set(self, key, value, ex=None): self.data[key] = value; return True
+    def get(self, key):
+        ent = self.data.get(key)
+        if not ent:
+            return None
+        exp, value = ent
+        if exp is not None and __import__("time").time() > exp:
+            self.data.pop(key, None)
+            return None
+        return value
+    def set(self, key, value, ex=None):
+        exp = (__import__("time").time() + ex) if ex else None
+        self.data[key] = (exp, value)
+        return True
     def flushdb(self):
         self.data.clear()
         return True
@@ -640,10 +654,15 @@ def parse_livescore_ninja_feed(text: str) -> List[Dict[str, Any]]:
             odds = generate_odds()
             home_logo = _fs_data_image_url(fields.get("OA", ""))
             away_logo = _fs_data_image_url(fields.get("OB", ""))
+            try:
+                start_ts = int(str(fields.get("AD", "")).strip() or 0)
+            except (TypeError, ValueError):
+                start_ts = 0
             current_group["items"].append(
                 {
                     "id": mid,
                     "time": time_disp,
+                    "start_ts": start_ts,
                     "status": status,
                     "home": fields.get("AE", "Home").strip(),
                     "away": fields.get("AF", "Away").strip(),
@@ -893,6 +912,97 @@ async def get_scores(sport: str = "football", date: str = "today", lang: str = "
         resp["livescore_com_page_url"] = cfg.get("livescore_com_page_url") or DEFAULT_SPORTS_ENGINE_CONFIG["livescore_com_page_url"]
     if notice:
         resp["notice"] = notice
+    return resp
+
+
+@app.get("/api/v2/scores")
+async def get_scores_v2(sport: str = "football", date: str = "today", lang: str = "en"):
+    """
+    Google-style scores API (v2). Normalized schema with competitions/matches,
+    team logos, live minutes and per-status summary. Provider chain:
+    google onebox -> engine feed (ninja + mobi live minutes). Cached ~30s.
+    """
+    target_dt = datetime.now()
+    date_word = date
+    if date == "yesterday":
+        target_dt -= timedelta(days=1)
+    elif date == "tomorrow":
+        target_dt += timedelta(days=1)
+    elif date != "today":
+        try:
+            target_dt = datetime.strptime(date, "%Y-%m-%d")
+            date_word = ""
+        except Exception:
+            date_word = "today"
+
+    date_str_iso = target_dt.strftime("%Y-%m-%d")
+    sk = sport.lower()
+    delta = (target_dt.date() - datetime.now().date()).days
+
+    cache_key = f"v2:scores:{sk}:{date_str_iso}:{lang}"
+    try:
+        cached = redis_client.get(cache_key)
+        if cached:
+            return json.loads(cached)
+    except Exception:
+        pass
+
+    provider = "engine"
+    competitions: List[Dict[str, Any]] = []
+
+    # 1. Google onebox (only for relative dates Google understands).
+    if date_word in ("today", "yesterday", "tomorrow") and sk in ("football", "basketball", "tennis"):
+        try:
+            g = await google_scores.fetch_google_onebox(sk, date_word, lang)
+        except Exception as e:
+            print(f"google provider error: {e}")
+            g = None
+        if g:
+            provider = "google"
+            competitions = g
+
+    # 2. Engine feed fallback (always used for full coverage / other sports).
+    if not competitions:
+        if sk in MOBI_UNSUPPORTED_SPORTS or sk not in NINJA_SPORT_IDS:
+            resp = {
+                "date": date_str_iso,
+                "sport": sk,
+                "provider": "none",
+                "competitions": [],
+                "summary": {"total": 0, "live": 0, "finished": 0, "upcoming": 0},
+                "notice": "SPORT_NOT_SUPPORTED",
+            }
+            return resp
+
+        groups_task = fetch_livescore_ninja(sk, delta, lang)
+        # mobi scrape carries the live-minute text the ninja feed lacks
+        mobi_task = fetch_flashscore_scrape(sk, delta) if delta == 0 else None
+        if mobi_task is not None:
+            groups, mobi_groups = await asyncio.gather(groups_task, mobi_task)
+        else:
+            groups = await groups_task
+            mobi_groups = []
+        if not groups:
+            groups = mobi_groups or await fetch_flashscore_scrape(sk, delta)
+            mobi_groups = groups if groups else []
+        live_minutes = google_scores.build_live_minute_index(mobi_groups)
+        competitions = google_scores.normalize_engine_groups(groups, live_minutes)
+
+    summary = google_scores.summarize(competitions)
+    resp = {
+        "date": date_str_iso,
+        "sport": sk,
+        "provider": provider,
+        "competitions": competitions,
+        "summary": summary,
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+    }
+
+    ttl = 30 if (delta == 0 and summary["live"] > 0) else (60 if delta == 0 else 300)
+    try:
+        redis_client.set(cache_key, json.dumps(resp), ex=ttl)
+    except Exception:
+        pass
     return resp
 
 

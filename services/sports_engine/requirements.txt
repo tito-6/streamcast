@@ -4,3 +4,5 @@ redis
 httpx
 python-dotenv
 google-generativeai
+beautifulsoup4
+lxml

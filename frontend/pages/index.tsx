@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Layout from '../components/Layout';
 import NewsSlider from '../components/NewsSlider';
-import InstagramFeed from '../components/InstagramFeed';
+import InstagramLive from '../components/InstagramLive';
 import { getStreamStatus, StreamStatus } from '../lib/api';
 import { MdLiveTv, MdArticle } from 'react-icons/md';
 import Link from 'next/link';
@@ -141,9 +141,9 @@ export default function HomePage() {
           </div>
 
 
-          {/* Instagram Feed */}
+          {/* Instagram Feed (live via Zernio, falls back to manual feed) */}
           <div className="lg:col-span-4 mt-8">
-            <InstagramFeed />
+            <InstagramLive />
           </div>
 
         </div>

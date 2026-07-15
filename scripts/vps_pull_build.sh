@@ -38,12 +38,20 @@ fi
 
 echo "==> Sports engine (port 8001)"
 cd "$REPO/services/sports_engine"
-python3 -m pip install -q -r requirements.txt 2>/dev/null || pip3 install -q -r requirements.txt
-pkill -f 'uvicorn main:app' 2>/dev/null || true
-pkill -f 'uvicorn.*8001' 2>/dev/null || true
-sleep 1
-nohup python3 -m uvicorn main:app --host 0.0.0.0 --port 8001 >> sports_engine.log 2>&1 &
-sleep 1
+if [[ -x venv/bin/pip ]]; then
+  venv/bin/pip install -q -r requirements.txt
+else
+  python3 -m pip install -q -r requirements.txt 2>/dev/null || pip3 install -q -r requirements.txt
+fi
+if command -v pm2 >/dev/null 2>&1 && pm2 describe sports-engine >/dev/null 2>&1; then
+  pm2 restart sports-engine
+else
+  pkill -f 'uvicorn main:app' 2>/dev/null || true
+  pkill -f 'uvicorn.*8001' 2>/dev/null || true
+  sleep 1
+  nohup python3 -m uvicorn main:app --host 0.0.0.0 --port 8001 >> sports_engine.log 2>&1 &
+fi
+sleep 2
 curl -sf "http://127.0.0.1:8001/" >/dev/null && echo "Sports engine: OK" || echo "Sports engine: check sports_engine.log"
 
 echo "==> Done"

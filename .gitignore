@@ -24,3 +24,8 @@ id_*
 .env.production
 *.secret
 ssh_access.txt
+
+# Build caches
+__pycache__/
+*.pyc
+tsconfig.tsbuildinfo
