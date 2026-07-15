@@ -14,6 +14,9 @@ interface IgProfile {
     display_name: string;
     avatar: string;
     profile_url: string;
+    bio: string;
+    bio_links: { title: string; url: string }[];
+    is_verified: boolean;
     followers: number;
     following: number;
     media_count: number;
@@ -73,6 +76,18 @@ const timeAgo = (iso: string) => {
 
 const GRADIENT_RING = 'bg-gradient-to-tr from-[#f9ce34] via-[#ee2a7b] to-[#6228d7]';
 
+/* Signed IG CDN URLs expire; route them through the engine's caching proxy. */
+const mediaSrc = (url?: string) => {
+    if (!url) return '';
+    try {
+        const host = new URL(url).hostname;
+        if (host.endsWith('.cdninstagram.com') || host.endsWith('.fbcdn.net')) {
+            return `/api/sports-engine/api/instagram/media?u=${encodeURIComponent(url)}`;
+        }
+    } catch { /* relative or invalid: use as-is */ }
+    return url;
+};
+
 /* ------------------------------------------------------------------ */
 const InstagramLive = () => {
     const [bundle, setBundle] = useState<IgBundle | null>(null);
@@ -96,11 +111,12 @@ const InstagramLive = () => {
         }
     }, []);
 
+    /* Mirror the IG account with a 2-hour refresh rate (matches server cache TTL). */
     useEffect(() => {
         fetchBundle();
         const id = setInterval(() => {
             if (document.visibilityState === 'visible') fetchBundle();
-        }, 5 * 60 * 1000);
+        }, 2 * 60 * 60 * 1000);
         return () => clearInterval(id);
     }, [fetchBundle]);
 
@@ -144,7 +160,7 @@ const InstagramLive = () => {
                         >
                             <div className="bg-midnight-black rounded-full p-[3px]">
                                 {profile.avatar ? (
-                                    <img src={profile.avatar} alt={profile.username} className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover" />
+                                    <img src={mediaSrc(profile.avatar)} alt={profile.username} className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover" />
                                 ) : (
                                     <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-white/10 flex items-center justify-center">
                                         <Instagram size={28} className="text-pink-400" />
@@ -158,6 +174,24 @@ const InstagramLive = () => {
                                 <BadgeCheck size={20} className="text-sky-400 shrink-0" />
                             </div>
                             <p className="text-gray-400 font-medium truncate">{profile.display_name}</p>
+                            {profile.bio && (
+                                <p className="text-gray-300 text-sm mt-1.5 whitespace-pre-line leading-snug max-w-md">{profile.bio}</p>
+                            )}
+                            {profile.bio_links?.length > 0 && (
+                                <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1">
+                                    {profile.bio_links.map((l) => (
+                                        <a
+                                            key={l.url}
+                                            href={l.url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-sky-400 hover:text-sky-300 text-sm font-semibold inline-flex items-center gap-1"
+                                        >
+                                            <ExternalLink size={12} /> {l.title || l.url.replace(/^https?:\/\//, '').slice(0, 40)}
+                                        </a>
+                                    ))}
+                                </div>
+                            )}
                             <div className="flex items-center gap-5 mt-2 text-sm">
                                 <span className="text-white"><b className="font-black">{nf(profile.media_count || posts.length)}</b> <span className="text-gray-400">posts</span></span>
                                 <span className="text-white"><b className="font-black">{nf(profile.followers)}</b> <span className="text-gray-400">followers</span></span>
@@ -196,7 +230,7 @@ const InstagramLive = () => {
                                     <span className={`${GRADIENT_RING} p-[2.5px] rounded-full group-hover:scale-105 transition-transform`}>
                                         <span className="block bg-midnight-black rounded-full p-[2.5px]">
                                             <img
-                                                src={s.thumbnail_url || s.media_url}
+                                                src={mediaSrc(s.thumbnail_url || s.media_url)}
                                                 alt=""
                                                 className="w-16 h-16 rounded-full object-cover"
                                                 loading="lazy"
@@ -219,11 +253,21 @@ const InstagramLive = () => {
                             className="group relative aspect-square rounded-2xl overflow-hidden bg-midnight-black/60 border border-white/5 hover:border-pink-500/40 transition-all duration-300 text-start"
                         >
                             <img
-                                src={post.is_video ? (post.thumbnail_url || post.media_url) : (post.media_url || post.thumbnail_url)}
+                                src={mediaSrc(post.is_video ? (post.thumbnail_url || post.media_url) : (post.media_url || post.thumbnail_url))}
                                 alt={post.caption?.slice(0, 60) || 'Instagram post'}
                                 loading="lazy"
                                 className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                onError={(e) => { (e.target as HTMLImageElement).style.opacity = '0'; }}
+                                onError={(e) => {
+                                    /* Last resort: try the other URL variant before giving up. */
+                                    const img = e.target as HTMLImageElement;
+                                    const alt = mediaSrc(post.is_video ? post.media_url : post.thumbnail_url);
+                                    if (alt && img.src !== alt && !img.dataset.retried) {
+                                        img.dataset.retried = '1';
+                                        img.src = alt;
+                                    } else {
+                                        img.style.opacity = '0';
+                                    }
+                                }}
                             />
                             {/* type badge */}
                             <div className="absolute top-2.5 end-2.5 text-white drop-shadow z-10">
@@ -265,14 +309,14 @@ const InstagramLive = () => {
                             <X size={20} />
                         </button>
                         <div className="absolute top-4 start-4 z-20 flex items-center gap-2">
-                            <img src={bundle.profile?.avatar} alt="" className="w-8 h-8 rounded-full object-cover border border-white/30" />
+                            <img src={mediaSrc(bundle.profile?.avatar)} alt="" className="w-8 h-8 rounded-full object-cover border border-white/30" />
                             <span className="text-white text-sm font-bold drop-shadow">@{bundle.profile?.username}</span>
                             <span className="text-white/60 text-xs">{timeAgo(activeStory.timestamp)}</span>
                         </div>
                         {activeStory.media_type === 'video' ? (
-                            <video src={activeStory.media_url} className="w-full h-full object-contain" autoPlay controls playsInline />
+                            <video src={mediaSrc(activeStory.media_url)} className="w-full h-full object-contain" autoPlay controls playsInline />
                         ) : (
-                            <img src={activeStory.media_url || activeStory.thumbnail_url} alt="" className="w-full h-full object-contain" />
+                            <img src={mediaSrc(activeStory.media_url || activeStory.thumbnail_url)} alt="" className="w-full h-full object-contain" />
                         )}
                     </div>
                 </div>
@@ -290,16 +334,16 @@ const InstagramLive = () => {
                         {/* Media side */}
                         <div className="md:flex-[1.3] bg-black flex items-center justify-center min-h-[40vh] md:min-h-0">
                             {activePost.is_video && activePost.media_url ? (
-                                <video src={activePost.media_url} poster={activePost.thumbnail_url} className="w-full h-full object-contain max-h-[85vh]" controls autoPlay playsInline />
+                                <video src={mediaSrc(activePost.media_url)} poster={mediaSrc(activePost.thumbnail_url)} className="w-full h-full object-contain max-h-[85vh]" controls autoPlay playsInline />
                             ) : (
-                                <img src={activePost.media_url || activePost.thumbnail_url} alt="" className="w-full h-full object-contain max-h-[85vh]" />
+                                <img src={mediaSrc(activePost.media_url || activePost.thumbnail_url)} alt="" className="w-full h-full object-contain max-h-[85vh]" />
                             )}
                         </div>
 
                         {/* Info side */}
                         <div className="md:w-[380px] flex flex-col border-t md:border-t-0 md:border-s border-white/10 min-h-0 flex-1">
                             <div className="p-4 flex items-center gap-3 border-b border-white/10 shrink-0">
-                                <img src={bundle.profile?.avatar} alt="" className="w-9 h-9 rounded-full object-cover" />
+                                <img src={mediaSrc(bundle.profile?.avatar)} alt="" className="w-9 h-9 rounded-full object-cover" />
                                 <div className="min-w-0">
                                     <div className="text-white text-sm font-bold truncate">@{bundle.profile?.username}</div>
                                     <div className="text-gray-500 text-xs">{timeAgo(activePost.published_at)} ago</div>
@@ -329,7 +373,7 @@ const InstagramLive = () => {
                                 {comments?.map((c) => (
                                     <div key={c.id} className="flex gap-3">
                                         {c.author.avatar ? (
-                                            <img src={c.author.avatar} alt="" className="w-8 h-8 rounded-full object-cover shrink-0" />
+                                            <img src={mediaSrc(c.author.avatar)} alt="" className="w-8 h-8 rounded-full object-cover shrink-0" />
                                         ) : (
                                             <div className="w-8 h-8 rounded-full bg-white/10 shrink-0" />
                                         )}
