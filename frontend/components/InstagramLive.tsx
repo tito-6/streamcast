@@ -77,6 +77,7 @@ const GRADIENT_RING = 'bg-gradient-to-tr from-[#f9ce34] via-[#ee2a7b] to-[#6228d
 const InstagramLive = () => {
     const [bundle, setBundle] = useState<IgBundle | null>(null);
     const [loaded, setLoaded] = useState(false);
+    const [visibleCount, setVisibleCount] = useState(9);
     const [activeStory, setActiveStory] = useState<IgStory | null>(null);
     const [activePost, setActivePost] = useState<IgPost | null>(null);
     const [comments, setComments] = useState<IgComment[] | null>(null);
@@ -158,7 +159,7 @@ const InstagramLive = () => {
                             </div>
                             <p className="text-gray-400 font-medium truncate">{profile.display_name}</p>
                             <div className="flex items-center gap-5 mt-2 text-sm">
-                                <span className="text-white"><b className="font-black">{nf(profile.media_count)}</b> <span className="text-gray-400">posts</span></span>
+                                <span className="text-white"><b className="font-black">{nf(profile.media_count || posts.length)}</b> <span className="text-gray-400">posts</span></span>
                                 <span className="text-white"><b className="font-black">{nf(profile.followers)}</b> <span className="text-gray-400">followers</span></span>
                                 {profile.following > 0 && (
                                     <span className="text-white"><b className="font-black">{nf(profile.following)}</b> <span className="text-gray-400">following</span></span>
@@ -211,7 +212,7 @@ const InstagramLive = () => {
 
                 {/* Posts grid */}
                 <div className="relative z-10 grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
-                    {posts.slice(0, 9).map((post) => (
+                    {posts.slice(0, visibleCount).map((post) => (
                         <button
                             key={post.id || post.permalink}
                             onClick={() => openPost(post)}
@@ -241,6 +242,18 @@ const InstagramLive = () => {
                         </button>
                     ))}
                 </div>
+
+                {/* Load more */}
+                {posts.length > visibleCount && (
+                    <div className="relative z-10 flex justify-center mt-6">
+                        <button
+                            onClick={() => setVisibleCount((c) => c + 12)}
+                            className="px-8 py-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold text-sm transition-all"
+                        >
+                            Show more ({posts.length - visibleCount} remaining)
+                        </button>
+                    </div>
+                )}
             </div>
 
             {/* Story viewer */}

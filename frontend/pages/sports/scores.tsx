@@ -4,7 +4,7 @@ import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 import { useLanguage } from '../../contexts/LanguageContext';
 import {
-    Zap, RefreshCw, Trophy, Globe, CalendarDays, Search, X,
+    RefreshCw, Trophy, Globe, Search, X, ChevronLeft, ChevronRight,
     Dumbbell, Activity, Club, Target, Swords, Volleyball, CircleDot, Hand,
 } from 'lucide-react';
 
@@ -44,12 +44,12 @@ interface ScoresV2 {
 /* ------------------------------------------------------------------ */
 const L: Record<string, any> = {
     en: {
-        title: 'Live Scores', heading: 'SCORE CENTER',
+        title: 'Live Scores', heading: 'Scores',
         sub: 'Live results with team crests and minute-by-minute updates, across every sport.',
-        liveBadge: 'Live updates', yesterday: 'Yesterday', today: 'Today', tomorrow: 'Tomorrow',
         all: 'All', live: 'Live', finished: 'Finished', upcoming: 'Upcoming',
-        noMatches: 'No matches found', searchPh: 'Search team or competition…',
+        noMatches: 'No matches found', searchPh: 'Search team or competition',
         matches: 'matches', updated: 'Updated', refresh: 'Refresh', ft: 'FT',
+        today: 'Today', locale: 'en',
         sports: {
             football: 'Football', basketball: 'Basketball', tennis: 'Tennis', hockey: 'Hockey',
             'american-football': 'NFL', baseball: 'Baseball', handball: 'Handball',
@@ -57,12 +57,12 @@ const L: Record<string, any> = {
         },
     },
     ar: {
-        title: 'النتائج المباشرة', heading: 'مركز النتائج',
+        title: 'النتائج المباشرة', heading: 'النتائج',
         sub: 'نتائج مباشرة مع شعارات الفرق وتحديثات دقيقة بدقيقة، لجميع الرياضات.',
-        liveBadge: 'تحديثات مباشرة', yesterday: 'أمس', today: 'اليوم', tomorrow: 'غدا',
         all: 'الكل', live: 'مباشر', finished: 'انتهت', upcoming: 'قادمة',
-        noMatches: 'لا توجد مباريات', searchPh: 'ابحث عن فريق أو بطولة…',
+        noMatches: 'لا توجد مباريات', searchPh: 'ابحث عن فريق أو بطولة',
         matches: 'مباراة', updated: 'آخر تحديث', refresh: 'تحديث', ft: 'انتهت',
+        today: 'اليوم', locale: 'ar',
         sports: {
             football: 'كرة القدم', basketball: 'كرة السلة', tennis: 'التنس', hockey: 'الهوكي',
             'american-football': 'كرة القدم الأمريكية', baseball: 'البيسبول', handball: 'كرة اليد',
@@ -70,12 +70,12 @@ const L: Record<string, any> = {
         },
     },
     tr: {
-        title: 'Canlı Skorlar', heading: 'SKOR MERKEZİ',
+        title: 'Canlı Skorlar', heading: 'Skorlar',
         sub: 'Takım armaları ve dakika dakika güncellemelerle tüm sporlarda canlı sonuçlar.',
-        liveBadge: 'Canlı güncellemeler', yesterday: 'Dün', today: 'Bugün', tomorrow: 'Yarın',
         all: 'Tümü', live: 'Canlı', finished: 'Bitti', upcoming: 'Yaklaşan',
-        noMatches: 'Maç bulunamadı', searchPh: 'Takım veya turnuva ara…',
+        noMatches: 'Maç bulunamadı', searchPh: 'Takım veya turnuva ara',
         matches: 'maç', updated: 'Güncellendi', refresh: 'Yenile', ft: 'MS',
+        today: 'Bugün', locale: 'tr',
         sports: {
             football: 'Futbol', basketball: 'Basketbol', tennis: 'Tenis', hockey: 'Hokey',
             'american-football': 'NFL', baseball: 'Beyzbol', handball: 'Hentbol',
@@ -98,6 +98,39 @@ const SPORTS: { id: string; icon: React.ReactNode }[] = [
 ];
 
 const SITE_ORIGIN = process.env.NEXT_PUBLIC_SITE_URL || 'https://sportevent.online';
+
+/* Google dark-theme palette */
+const G = {
+    bg: '#202124',
+    card: '#303134',
+    cardHover: '#35363a',
+    border: '#3c4043',
+    text: '#e8eaed',
+    dim: '#9aa0a6',
+    blue: '#8ab4f8',
+    red: '#f28b82',
+    green: '#81c995',
+};
+
+/* ------------------------------------------------------------------ */
+/* Date strip: 7-day carousel centered on today (Google "Matches" tab) */
+/* ------------------------------------------------------------------ */
+const buildDates = (locale: string, todayLabel: string) => {
+    const out: { id: string; day: string; label: string; isToday: boolean }[] = [];
+    for (let off = -3; off <= 3; off++) {
+        const d = new Date();
+        d.setDate(d.getDate() + off);
+        const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        const id = off === -1 ? 'yesterday' : off === 0 ? 'today' : off === 1 ? 'tomorrow' : iso;
+        out.push({
+            id,
+            day: d.toLocaleDateString(locale, { weekday: 'short' }),
+            label: off === 0 ? todayLabel : d.toLocaleDateString(locale, { day: 'numeric', month: 'short' }),
+            isToday: off === 0,
+        });
+    }
+    return out;
+};
 
 /* Country label: prefer localized name from the ISO flag code. */
 const countryLabel = (comp: Competition, lang: string): string => {
@@ -124,7 +157,7 @@ const localKickoff = (m: MatchItem): string => {
 /* Lightweight flag via flagcdn (avoids bundling every SVG flag). */
 const CountryFlag = ({ code }: { code: string }) => {
     const [failed, setFailed] = useState(false);
-    if (!code || failed) return <Globe size={14} className="text-gray-500" />;
+    if (!code || failed) return <Globe size={14} style={{ color: G.dim }} />;
     return (
         <img
             src={`https://flagcdn.com/w40/${code.toLowerCase()}.png`}
@@ -137,11 +170,14 @@ const CountryFlag = ({ code }: { code: string }) => {
     );
 };
 
-const TeamLogo = ({ src, name }: { src: string; name: string }) => {
+const TeamLogo = ({ src, name, size = 24 }: { src: string; name: string; size?: number }) => {
     const [failed, setFailed] = useState(false);
     if (!src || failed) {
         return (
-            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/10 flex items-center justify-center text-[10px] font-black text-white/70 shrink-0">
+            <div
+                className="rounded-full flex items-center justify-center text-[9px] font-bold shrink-0"
+                style={{ width: size, height: size, background: G.border, color: G.dim }}
+            >
                 {(name || '?').slice(0, 2).toUpperCase()}
             </div>
         );
@@ -152,39 +188,85 @@ const TeamLogo = ({ src, name }: { src: string; name: string }) => {
             alt={name}
             loading="lazy"
             onError={() => setFailed(true)}
-            className="w-7 h-7 sm:w-8 sm:h-8 object-contain shrink-0 drop-shadow"
+            className="object-contain shrink-0"
+            style={{ width: size, height: size }}
         />
     );
 };
 
-const StatusBadge = ({ m, t }: { m: MatchItem; t: any }) => {
-    if (m.status === 'LIVE') {
-        return (
-            <span className="inline-flex items-center gap-1.5 text-red-400 font-black text-xs">
-                <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping-slow" />
-                {m.minute || m.status_text || t.live}
-            </span>
-        );
-    }
-    if (m.status === 'FINISHED') {
-        return <span className="text-gray-500 font-bold text-xs uppercase">{t.ft}</span>;
-    }
-    return <span className="text-gray-400 font-semibold text-xs tabular-nums">{localKickoff(m)}</span>;
-};
-
-const ScoreCell = ({ m }: { m: MatchItem }) => {
-    const s = (v: number | null) => (v === null ? '–' : v);
+/* ------------------------------------------------------------------ */
+/* Google-style match card                                             */
+/* ------------------------------------------------------------------ */
+const MatchCard = ({ m, t }: { m: MatchItem; t: any }) => {
     const homeWin = m.status === 'FINISHED' && (m.home.score ?? 0) > (m.away.score ?? 0);
     const awayWin = m.status === 'FINISHED' && (m.away.score ?? 0) > (m.home.score ?? 0);
-    const liveCls = m.status === 'LIVE' ? 'text-red-400' : 'text-white';
+
+    const headerLeft =
+        m.status === 'UPCOMING'
+            ? localKickoff(m)
+            : m.start_ts > 0
+                ? new Date(m.start_ts * 1000).toLocaleDateString(t.locale, { weekday: 'short', day: 'numeric', month: 'short' })
+                : '';
+
     return (
-        <div className={`flex flex-col items-center justify-center leading-tight tabular-nums font-black text-base sm:text-lg ${liveCls}`}>
-            <span className={homeWin ? '' : awayWin ? 'opacity-50' : ''}>{s(m.home.score)}</span>
-            <span className={awayWin ? '' : homeWin ? 'opacity-50' : ''}>{s(m.away.score)}</span>
+        <div
+            className="g-card rounded-xl p-3 transition-colors"
+            style={{ background: G.card, border: `1px solid ${G.border}` }}
+        >
+            {/* Header: date/time + status pill */}
+            <div className="flex items-center justify-between mb-2.5">
+                <span className="text-[12px] font-medium" style={{ color: G.dim }}>{headerLeft}</span>
+                {m.status === 'LIVE' ? (
+                    <span
+                        className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2 py-0.5 rounded"
+                        style={{ color: G.red, background: 'rgba(242,139,130,0.12)' }}
+                    >
+                        <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: G.red }} />
+                        {m.minute || m.status_text || t.live}
+                    </span>
+                ) : m.status === 'FINISHED' ? (
+                    <span
+                        className="text-[11px] font-bold px-2 py-0.5 rounded"
+                        style={{ color: G.dim, background: G.border }}
+                    >
+                        {t.ft}
+                    </span>
+                ) : null}
+            </div>
+
+            {/* Teams */}
+            {([['home', homeWin, awayWin], ['away', awayWin, homeWin]] as const).map(([side, isWin, otherWin]) => {
+                const team = m[side];
+                const dimmed = m.status === 'FINISHED' && otherWin;
+                return (
+                    <div key={side} className="flex items-center gap-2.5 py-1 min-w-0">
+                        <TeamLogo src={team.logo} name={team.name} />
+                        <span
+                            className="truncate text-[14px] flex-1"
+                            style={{ color: dimmed ? G.dim : G.text, fontWeight: isWin ? 700 : 500 }}
+                        >
+                            {team.name}
+                        </span>
+                        <span
+                            className="text-[15px] tabular-nums shrink-0 w-7 text-end"
+                            style={{
+                                color: m.status === 'LIVE' ? G.red : dimmed ? G.dim : G.text,
+                                fontWeight: isWin || m.status === 'LIVE' ? 700 : 500,
+                            }}
+                        >
+                            {team.score === null ? '' : team.score}
+                        </span>
+                        {isWin && (
+                            <span className="shrink-0 text-[10px]" style={{ color: G.dim }} aria-hidden>◂</span>
+                        )}
+                    </div>
+                );
+            })}
         </div>
     );
 };
 
+/* ------------------------------------------------------------------ */
 const GoogleScoresPage = () => {
     const { language } = useLanguage();
     const t = L[language] || L.en;
@@ -198,6 +280,9 @@ const GoogleScoresPage = () => {
     const [loading, setLoading] = useState(true);
     const [updatedAt, setUpdatedAt] = useState<Date | null>(null);
     const abortRef = useRef<AbortController | null>(null);
+    const dateStripRef = useRef<HTMLDivElement | null>(null);
+
+    const dates = useMemo(() => buildDates(t.locale, t.today), [t]);
 
     const fetchScores = useCallback(async (silent = false) => {
         abortRef.current?.abort();
@@ -257,8 +342,12 @@ const GoogleScoresPage = () => {
     const summary = data?.summary || { total: 0, live: 0, finished: 0, upcoming: 0 };
     const canonicalUrl = `${SITE_ORIGIN.replace(/\/$/, '')}/sports/scores`;
 
+    const scrollStrip = (dir: number) => {
+        dateStripRef.current?.scrollBy({ left: dir * 180 * (isRTL ? -1 : 1), behavior: 'smooth' });
+    };
+
     return (
-        <div className={`bg-[#0b0e11] min-h-screen text-white font-cairo ${isRTL ? 'rtl' : ''}`} dir={isRTL ? 'rtl' : 'ltr'}>
+        <div className={`min-h-screen g-root ${isRTL ? 'rtl' : ''}`} dir={isRTL ? 'rtl' : 'ltr'} style={{ background: G.bg, color: G.text }}>
             <Head>
                 <title>{`${t.title} | Sport Events`}</title>
                 <meta name="description" content={t.sub} />
@@ -274,209 +363,213 @@ const GoogleScoresPage = () => {
 
             <Navbar />
 
-            <main className="relative z-10 pt-20 sm:pt-24 pb-20" id="main-content">
-                {/* Header */}
-                <div className="container mx-auto px-3 sm:px-4 mb-5">
-                    <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-5 border-b border-white/5 pb-6">
-                        <div className="min-w-0">
-                            <span className="bg-red-500/10 text-red-400 text-[10px] font-bold px-2 py-1 rounded uppercase tracking-widest inline-flex items-center gap-1 mb-2">
-                                <Zap size={10} fill="currentColor" aria-hidden /> {t.liveBadge}
-                            </span>
-                            <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight mb-2">
-                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-500">{t.heading}</span>
+            <main className="relative z-10 pt-20 sm:pt-24 pb-20 g-font" id="main-content">
+                <div className="max-w-3xl lg:max-w-6xl mx-auto px-3 sm:px-5">
+
+                    {/* Title card (Google knowledge-panel header) */}
+                    <div
+                        className="rounded-2xl px-5 py-4 mb-3 flex items-center gap-4"
+                        style={{ background: G.card, border: `1px solid ${G.border}` }}
+                    >
+                        <div
+                            className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
+                            style={{ background: G.border }}
+                        >
+                            <Trophy size={22} style={{ color: G.blue }} />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                            <h1 className="text-[22px] sm:text-[26px] font-normal leading-tight" style={{ color: G.text }}>
+                                {t.heading}
+                                <span className="ms-2 align-middle text-[12px] font-medium" style={{ color: G.dim }}>
+                                    {t.sports[sport] || sport}
+                                </span>
                             </h1>
-                            <p className="text-gray-400 max-w-xl text-sm md:text-base font-medium leading-relaxed">{t.sub}</p>
+                            {updatedAt && (
+                                <p className="text-[12px]" style={{ color: G.dim }}>
+                                    {t.updated} {updatedAt.toLocaleTimeString()}
+                                </p>
+                            )}
                         </div>
-
-                        <div className="flex flex-wrap items-center gap-2">
-                            <div className="flex items-center gap-1 bg-white/5 p-1 rounded-xl border border-white/5" role="group">
-                                {[
-                                    { id: 'yesterday', label: t.yesterday },
-                                    { id: 'today', label: t.today },
-                                    { id: 'tomorrow', label: t.tomorrow },
-                                ].map((d) => (
-                                    <button
-                                        key={d.id}
-                                        type="button"
-                                        aria-pressed={date === d.id}
-                                        onClick={() => setDate(d.id)}
-                                        className={`min-h-[42px] px-4 py-2 rounded-lg text-xs font-bold transition-all ${
-                                            date === d.id ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'text-gray-400 hover:text-white hover:bg-white/5'
-                                        }`}
-                                    >
-                                        {d.label}
-                                    </button>
-                                ))}
-                            </div>
-                            <label className="flex items-center gap-2 bg-white/5 border border-white/5 rounded-xl px-3 min-h-[50px] cursor-pointer">
-                                <CalendarDays size={16} className="text-emerald-400" />
-                                <input
-                                    type="date"
-                                    className="bg-transparent text-xs font-bold text-gray-300 outline-none [color-scheme:dark]"
-                                    onChange={(e) => e.target.value && setDate(e.target.value)}
-                                    aria-label="date"
-                                />
-                            </label>
-                        </div>
+                        <button
+                            onClick={() => fetchScores()}
+                            className="p-2.5 rounded-full transition-colors hover:bg-white/5 shrink-0"
+                            aria-label={t.refresh}
+                            style={{ color: G.dim }}
+                        >
+                            <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
+                        </button>
                     </div>
-                </div>
 
-                {/* Sport tabs */}
-                <div className="container mx-auto px-3 sm:px-4 mb-4">
-                    <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar" role="tablist">
+                    {/* Sport chips */}
+                    <div className="flex gap-2 overflow-x-auto pb-1 mb-3 no-scrollbar" role="tablist">
                         {SPORTS.map((s) => (
                             <button
                                 key={s.id}
                                 role="tab"
                                 aria-selected={sport === s.id}
                                 onClick={() => setSport(s.id)}
-                                className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-xs font-bold whitespace-nowrap border transition-all ${
+                                className="g-chip flex items-center gap-2 px-4 py-2 rounded-full text-[13px] font-medium whitespace-nowrap transition-colors"
+                                style={
                                     sport === s.id
-                                        ? 'bg-white text-black border-white shadow-lg'
-                                        : 'bg-white/5 text-gray-300 border-white/10 hover:bg-white/10'
-                                }`}
+                                        ? { background: G.text, color: G.bg, border: `1px solid ${G.text}`, fontWeight: 700 }
+                                        : { background: 'transparent', color: G.text, border: `1px solid ${G.border}` }
+                                }
                             >
                                 {s.icon} {t.sports[s.id] || s.id}
                             </button>
                         ))}
                     </div>
-                </div>
 
-                {/* Filters row */}
-                <div className="container mx-auto px-3 sm:px-4 mb-6 flex flex-wrap items-center gap-2">
-                    {([
-                        ['all', t.all, summary.total],
-                        ['LIVE', t.live, summary.live],
-                        ['FINISHED', t.finished, summary.finished],
-                        ['UPCOMING', t.upcoming, summary.upcoming],
-                    ] as const).map(([id, label, count]) => (
-                        <button
-                            key={id}
-                            onClick={() => setStatusFilter(id as any)}
-                            className={`px-3.5 py-2 rounded-lg text-xs font-bold border transition-all inline-flex items-center gap-2 ${
-                                statusFilter === id
-                                    ? id === 'LIVE'
-                                        ? 'bg-red-500/20 border-red-500/50 text-red-300'
-                                        : 'bg-emerald-500/20 border-emerald-500/50 text-emerald-300'
-                                    : 'bg-white/5 border-white/10 text-gray-400 hover:text-white'
-                            }`}
-                        >
-                            {id === 'LIVE' && <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />}
-                            {label}
-                            <span className="opacity-60 tabular-nums">{count}</span>
+                    {/* Date strip */}
+                    <div
+                        className="rounded-2xl mb-3 flex items-center"
+                        style={{ background: G.card, border: `1px solid ${G.border}` }}
+                    >
+                        <button onClick={() => scrollStrip(-1)} className="p-2 hover:bg-white/5 rounded-s-2xl self-stretch" aria-label="prev" style={{ color: G.dim }}>
+                            {isRTL ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
                         </button>
-                    ))}
-
-                    <div className="relative ms-auto min-w-[220px] flex-1 sm:flex-none sm:w-72">
-                        <Search size={14} className={`absolute top-1/2 -translate-y-1/2 text-gray-500 ${isRTL ? 'right-3' : 'left-3'}`} />
-                        <input
-                            value={query}
-                            onChange={(e) => setQuery(e.target.value)}
-                            placeholder={t.searchPh}
-                            className={`w-full bg-white/5 border border-white/10 rounded-lg py-2.5 text-xs text-white outline-none focus:border-emerald-500 ${isRTL ? 'pr-9 pl-8' : 'pl-9 pr-8'}`}
-                        />
-                        {query && (
-                            <button onClick={() => setQuery('')} className={`absolute top-1/2 -translate-y-1/2 text-gray-500 hover:text-white ${isRTL ? 'left-2.5' : 'right-2.5'}`} aria-label="clear">
-                                <X size={14} />
-                            </button>
-                        )}
+                        <div ref={dateStripRef} className="flex-1 flex gap-1 overflow-x-auto no-scrollbar px-1 py-2">
+                            {dates.map((d) => (
+                                <button
+                                    key={d.id}
+                                    onClick={() => setDate(d.id)}
+                                    aria-pressed={date === d.id}
+                                    className="flex flex-col items-center px-4 py-1.5 rounded-lg min-w-[76px] transition-colors"
+                                    style={
+                                        date === d.id
+                                            ? { background: 'rgba(138,180,248,0.15)' }
+                                            : {}
+                                    }
+                                >
+                                    <span className="text-[11px] font-medium uppercase" style={{ color: date === d.id ? G.blue : G.dim }}>
+                                        {d.day}
+                                    </span>
+                                    <span className="text-[13px] font-bold" style={{ color: date === d.id ? G.blue : G.text }}>
+                                        {d.label}
+                                    </span>
+                                </button>
+                            ))}
+                            <label className="flex flex-col items-center justify-center px-3 py-1.5 rounded-lg cursor-pointer min-w-[76px]">
+                                <input
+                                    type="date"
+                                    className="bg-transparent text-[12px] font-medium outline-none [color-scheme:dark] w-[104px]"
+                                    style={{ color: G.dim }}
+                                    onChange={(e) => e.target.value && setDate(e.target.value)}
+                                    aria-label="date"
+                                />
+                            </label>
+                        </div>
+                        <button onClick={() => scrollStrip(1)} className="p-2 hover:bg-white/5 rounded-e-2xl self-stretch" aria-label="next" style={{ color: G.dim }}>
+                            {isRTL ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
+                        </button>
                     </div>
 
-                    <button
-                        onClick={() => fetchScores()}
-                        className="p-2.5 rounded-lg bg-white/5 border border-white/10 text-gray-400 hover:text-white transition-colors"
-                        aria-label={t.refresh}
-                        title={updatedAt ? `${t.updated} ${updatedAt.toLocaleTimeString()}` : t.refresh}
-                    >
-                        <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
-                    </button>
-                </div>
+                    {/* Status chips + search */}
+                    <div className="flex flex-wrap items-center gap-2 mb-5">
+                        {([
+                            ['all', t.all, summary.total],
+                            ['LIVE', t.live, summary.live],
+                            ['FINISHED', t.finished, summary.finished],
+                            ['UPCOMING', t.upcoming, summary.upcoming],
+                        ] as const).map(([id, label, count]) => (
+                            <button
+                                key={id}
+                                onClick={() => setStatusFilter(id as any)}
+                                className="px-3.5 py-1.5 rounded-full text-[12px] font-medium inline-flex items-center gap-2 transition-colors"
+                                style={
+                                    statusFilter === id
+                                        ? id === 'LIVE'
+                                            ? { background: 'rgba(242,139,130,0.15)', color: G.red, border: `1px solid rgba(242,139,130,0.4)` }
+                                            : { background: 'rgba(138,180,248,0.15)', color: G.blue, border: `1px solid rgba(138,180,248,0.4)` }
+                                        : { background: 'transparent', color: G.dim, border: `1px solid ${G.border}` }
+                                }
+                            >
+                                {id === 'LIVE' && <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: G.red }} />}
+                                {label}
+                                <span className="opacity-70 tabular-nums">{count}</span>
+                            </button>
+                        ))}
 
-                {/* Content */}
-                <div className="container mx-auto px-3 sm:px-4 space-y-4">
+                        <div className="relative ms-auto min-w-[200px] flex-1 sm:flex-none sm:w-72">
+                            <Search size={14} className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'right-3.5' : 'left-3.5'}`} style={{ color: G.dim }} />
+                            <input
+                                value={query}
+                                onChange={(e) => setQuery(e.target.value)}
+                                placeholder={t.searchPh}
+                                className={`w-full rounded-full py-2 text-[13px] outline-none transition-colors ${isRTL ? 'pr-9 pl-8' : 'pl-9 pr-8'}`}
+                                style={{ background: G.card, border: `1px solid ${G.border}`, color: G.text }}
+                            />
+                            {query && (
+                                <button onClick={() => setQuery('')} className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'left-3' : 'right-3'}`} style={{ color: G.dim }} aria-label="clear">
+                                    <X size={14} />
+                                </button>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Content */}
                     {loading && !data && (
-                        <div className="space-y-3" aria-busy="true">
-                            {[...Array(5)].map((_, i) => (
-                                <div key={i} className="h-24 rounded-2xl bg-white/[0.03] border border-white/5 animate-pulse" />
+                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3" aria-busy="true">
+                            {[...Array(6)].map((_, i) => (
+                                <div key={i} className="h-[116px] rounded-xl animate-pulse" style={{ background: G.card }} />
                             ))}
                         </div>
                     )}
 
                     {!loading && filtered.length === 0 && (
-                        <div className="text-center py-24 text-gray-500 font-semibold">
-                            <Globe size={40} className="mx-auto mb-4 opacity-30" />
-                            {t.noMatches}
+                        <div className="text-center py-24" style={{ color: G.dim }}>
+                            <Globe size={40} className="mx-auto mb-4 opacity-40" />
+                            <p className="font-medium">{t.noMatches}</p>
                         </div>
                     )}
 
-                    {filtered.map((comp) => (
-                        <section key={comp.id} className="rounded-2xl bg-white/[0.03] border border-white/5 overflow-hidden">
-                            <header className="flex items-center gap-3 px-4 py-3 bg-white/[0.03] border-b border-white/5">
-                                {comp.flag ? (
-                                    <span className="w-6 h-4 overflow-hidden rounded-[3px] shrink-0 shadow">
-                                        <CountryFlag code={comp.flag} />
+                    <div className="space-y-6">
+                        {filtered.map((comp) => (
+                            <section key={comp.id}>
+                                {/* Competition header (Google league strip) */}
+                                <header className="flex items-center gap-2.5 px-1 mb-2.5">
+                                    {comp.flag ? (
+                                        <span className="w-5 h-[14px] overflow-hidden rounded-[2px] shrink-0">
+                                            <CountryFlag code={comp.flag} />
+                                        </span>
+                                    ) : comp.logo ? (
+                                        <img src={comp.logo} alt="" className="w-[18px] h-[18px] object-contain shrink-0" loading="lazy" />
+                                    ) : (
+                                        <Globe size={14} style={{ color: G.dim }} className="shrink-0" />
+                                    )}
+                                    <h2 className="text-[14px] font-bold truncate" style={{ color: G.text }}>
+                                        {comp.name}
+                                    </h2>
+                                    <span className="text-[12px] truncate" style={{ color: G.dim }}>
+                                        · {countryLabel(comp, language)}
                                     </span>
-                                ) : comp.logo ? (
-                                    <img src={comp.logo} alt="" className="w-5 h-5 object-contain shrink-0" loading="lazy" />
-                                ) : (
-                                    <Globe size={14} className="text-gray-500 shrink-0" />
-                                )}
-                                <div className="min-w-0">
-                                    <div className="text-[10px] uppercase tracking-widest text-gray-500 font-bold truncate">
-                                        {countryLabel(comp, language)}
-                                    </div>
-                                    <h2 className="text-sm font-black text-white truncate">{comp.name}</h2>
-                                </div>
-                                <span className="ms-auto text-[10px] text-gray-500 font-bold tabular-nums shrink-0">
-                                    {comp.matches.length} {t.matches}
-                                </span>
-                            </header>
+                                    <span className="ms-auto text-[11px] tabular-nums shrink-0" style={{ color: G.dim }}>
+                                        {comp.matches.length} {t.matches}
+                                    </span>
+                                </header>
 
-                            <ul className="divide-y divide-white/5">
-                                {comp.matches.map((m) => (
-                                    <li key={m.id} className={`px-3 sm:px-4 py-3 hover:bg-white/[0.03] transition-colors ${m.status === 'LIVE' ? 'bg-red-500/[0.04]' : ''}`}>
-                                        <div className="grid grid-cols-[64px_1fr_auto] sm:grid-cols-[80px_1fr_auto] items-center gap-3">
-                                            <div className="text-center">
-                                                <StatusBadge m={m} t={t} />
-                                            </div>
-                                            <div className="min-w-0 space-y-1.5">
-                                                <div className="flex items-center gap-2.5 min-w-0">
-                                                    <TeamLogo src={m.home.logo} name={m.home.name} />
-                                                    <span className={`truncate text-sm font-bold ${m.status === 'FINISHED' && (m.home.score ?? 0) < (m.away.score ?? 0) ? 'text-gray-500' : 'text-white'}`}>
-                                                        {m.home.name}
-                                                    </span>
-                                                </div>
-                                                <div className="flex items-center gap-2.5 min-w-0">
-                                                    <TeamLogo src={m.away.logo} name={m.away.name} />
-                                                    <span className={`truncate text-sm font-bold ${m.status === 'FINISHED' && (m.away.score ?? 0) < (m.home.score ?? 0) ? 'text-gray-500' : 'text-white'}`}>
-                                                        {m.away.name}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <ScoreCell m={m} />
-                                        </div>
-                                    </li>
-                                ))}
-                            </ul>
-                        </section>
-                    ))}
+                                {/* Match cards grid */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+                                    {comp.matches.map((m) => (
+                                        <MatchCard key={m.id} m={m} t={t} />
+                                    ))}
+                                </div>
+                            </section>
+                        ))}
+                    </div>
                 </div>
             </main>
 
-            <div className="geometric-pattern fixed inset-0 pointer-events-none z-0 opacity-10" aria-hidden />
             <Footer />
 
             <style jsx global>{`
-                .font-cairo { font-family: 'Cairo', sans-serif; }
+                .g-root { background: ${G.bg}; }
+                .g-font { font-family: 'Google Sans', Roboto, 'Segoe UI', Cairo, Arial, sans-serif; }
                 .rtl { direction: rtl; }
                 .no-scrollbar::-webkit-scrollbar { display: none; }
                 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-                @keyframes ping-slow {
-                    0% { opacity: 1; }
-                    50% { opacity: 0.35; }
-                    100% { opacity: 1; }
-                }
-                .animate-ping-slow { animation: ping-slow 1.4s ease-in-out infinite; }
+                .g-card:hover { background: ${G.cardHover} !important; }
+                .g-chip:hover { background: rgba(255,255,255,0.05); }
             `}</style>
         </div>
     );

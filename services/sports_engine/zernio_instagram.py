@@ -73,6 +73,24 @@ async def _zget(path: str, params: Optional[Dict[str, Any]] = None) -> Optional[
         return None
 
 
+async def _zpost(path: str, payload: Optional[Dict[str, Any]] = None) -> Optional[Any]:
+    key = _api_key()
+    if not key:
+        return None
+    headers = {"Authorization": f"Bearer {key}", "Accept": "application/json"}
+    url = f"{ZERNIO_BASE}{path}"
+    try:
+        async with httpx.AsyncClient() as client:
+            resp = await client.post(url, json=payload or {}, headers=headers, timeout=60.0)
+        if resp.status_code not in (200, 201, 202):
+            print(f"zernio POST {path} -> HTTP {resp.status_code}: {resp.text[:300]}")
+            return None
+        return resp.json()
+    except Exception as e:
+        print(f"zernio POST {path} error: {e}")
+        return None
+
+
 async def resolve_account() -> Optional[Dict[str, Any]]:
     """Find the connected Instagram account (profile info incl. avatar/followers)."""
     cached = _cache_get("ig_account")
@@ -148,26 +166,58 @@ def _shape_post(p: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
-async def fetch_external_posts(account_id: str, limit: int = 18) -> List[Dict[str, Any]]:
+async def sync_external_posts(account_id: str) -> None:
+    """Ask Zernio to re-sync the latest IG posts (rate-limited to once per hour)."""
+    if _cache_get("ig_synced"):
+        return
+    _cache_set("ig_synced", True, 3600)
+    await _zpost("/posts/sync-external", {"accountId": account_id, "platform": "instagram"})
+
+
+async def fetch_external_posts(account_id: str, max_posts: int = 500) -> List[Dict[str, Any]]:
+    """Fetch the FULL external post history, paginating until Zernio runs out."""
     cached = _cache_get("ig_posts")
     if cached is not None:
         return cached
-    data = await _zget(
-        "/posts",
-        {
-            "source": "external",
-            "platform": "instagram",
-            "accountId": account_id,
-            "limit": limit,
-            "page": 1,
-        },
-    )
+
+    await sync_external_posts(account_id)
+
+    page_size = 100
     posts_raw: List[Dict[str, Any]] = []
-    if isinstance(data, dict):
-        posts_raw = data.get("posts") or data.get("data") or []
-    elif isinstance(data, list):
-        posts_raw = data
-    shaped = [_shape_post(p) for p in posts_raw if isinstance(p, dict)]
+    seen_ids: set = set()
+    for page in range(1, (max_posts // page_size) + 2):
+        data = await _zget(
+            "/posts",
+            {
+                "source": "external",
+                "platform": "instagram",
+                "accountId": account_id,
+                "limit": page_size,
+                "page": page,
+            },
+        )
+        batch: List[Dict[str, Any]] = []
+        if isinstance(data, dict):
+            batch = data.get("posts") or data.get("data") or []
+        elif isinstance(data, list):
+            batch = data
+        if not batch:
+            break
+        new = 0
+        for p in batch:
+            if not isinstance(p, dict):
+                continue
+            pid = str(p.get("platformPostId") or p.get("_id") or "")
+            if pid in seen_ids:
+                continue
+            seen_ids.add(pid)
+            posts_raw.append(p)
+            new += 1
+        # Stop on a short/duplicate-only page (last page reached).
+        if new == 0 or len(batch) < page_size or len(posts_raw) >= max_posts:
+            break
+
+    shaped = [_shape_post(p) for p in posts_raw]
     shaped = [p for p in shaped if p["media_url"] or p["thumbnail_url"]]
     shaped.sort(key=lambda p: p.get("published_at") or "", reverse=True)
     _cache_set("ig_posts", shaped, 300)
