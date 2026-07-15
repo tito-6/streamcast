@@ -49,7 +49,7 @@ const L: Record<string, any> = {
         all: 'All', live: 'Live', finished: 'Finished', upcoming: 'Upcoming',
         noMatches: 'No matches found', searchPh: 'Search team or competition',
         matches: 'matches', updated: 'Updated', refresh: 'Refresh', ft: 'FT',
-        today: 'Today', locale: 'en',
+        today: 'Today', locale: 'en', otherComps: 'Other competitions',
         sports: {
             football: 'Football', basketball: 'Basketball', tennis: 'Tennis', hockey: 'Hockey',
             'american-football': 'NFL', baseball: 'Baseball', handball: 'Handball',
@@ -62,7 +62,7 @@ const L: Record<string, any> = {
         all: 'الكل', live: 'مباشر', finished: 'انتهت', upcoming: 'قادمة',
         noMatches: 'لا توجد مباريات', searchPh: 'ابحث عن فريق أو بطولة',
         matches: 'مباراة', updated: 'آخر تحديث', refresh: 'تحديث', ft: 'انتهت',
-        today: 'اليوم', locale: 'ar',
+        today: 'اليوم', locale: 'ar', otherComps: 'بطولات أخرى',
         sports: {
             football: 'كرة القدم', basketball: 'كرة السلة', tennis: 'التنس', hockey: 'الهوكي',
             'american-football': 'كرة القدم الأمريكية', baseball: 'البيسبول', handball: 'كرة اليد',
@@ -75,7 +75,7 @@ const L: Record<string, any> = {
         all: 'Tümü', live: 'Canlı', finished: 'Bitti', upcoming: 'Yaklaşan',
         noMatches: 'Maç bulunamadı', searchPh: 'Takım veya turnuva ara',
         matches: 'maç', updated: 'Güncellendi', refresh: 'Yenile', ft: 'MS',
-        today: 'Bugün', locale: 'tr',
+        today: 'Bugün', locale: 'tr', otherComps: 'Diğer turnuvalar',
         sports: {
             football: 'Futbol', basketball: 'Basketbol', tennis: 'Tenis', hockey: 'Hokey',
             'american-football': 'NFL', baseball: 'Beyzbol', handball: 'Hentbol',
@@ -98,6 +98,150 @@ const SPORTS: { id: string; icon: React.ReactNode }[] = [
 ];
 
 const SITE_ORIGIN = process.env.NEXT_PUBLIC_SITE_URL || 'https://sportevent.online';
+
+/* ------------------------------------------------------------------ */
+/* Featured leagues: pinned order + localized names (football)         */
+/* ------------------------------------------------------------------ */
+
+/* Lowercase, strip accents and Turkish diacritics so matching survives
+   whatever language the upstream feed is in. */
+const norm = (s: string) =>
+    (s || '')
+        .toLowerCase()
+        .replace(/ş/g, 's').replace(/ü/g, 'u').replace(/ö/g, 'o')
+        .replace(/ç/g, 'c').replace(/ı/g, 'i').replace(/ğ/g, 'g')
+        .normalize('NFKD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9\s.]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+interface FeaturedLeague {
+    id: string;
+    flag: string;                        // ISO2 when the competition is national
+    countries: string[];                 // normalized country names (any feed language)
+    include: RegExp;                     // tested against normalized league name
+    exclude?: RegExp;
+    names: { en: string; ar: string; tr: string };
+    region: { en: string; ar: string; tr: string };
+}
+
+const FEATURED_LEAGUES: FeaturedLeague[] = [
+    {
+        id: 'bundesliga', flag: 'DE', countries: ['almanya', 'germany', 'deutschland'],
+        include: /\bbundesliga\b/, exclude: /\b2\b|\bfrauen\b|women|bayanlar/,
+        names: { en: 'Bundesliga', ar: 'الدوري الألماني - بوندسليغا', tr: 'Bundesliga' },
+        region: { en: 'Germany', ar: 'ألمانيا', tr: 'Almanya' },
+    },
+    {
+        id: 'ligue1', flag: 'FR', countries: ['fransa', 'france'],
+        include: /\bligue 1\b|\blig 1\b/, exclude: /women|bayanlar/,
+        names: { en: 'Ligue 1', ar: 'الدوري الفرنسي - ليغ 1', tr: 'Ligue 1' },
+        region: { en: 'France', ar: 'فرنسا', tr: 'Fransa' },
+    },
+    {
+        id: 'premier-league', flag: 'GB', countries: ['ingiltere', 'england'],
+        include: /\bpremier (league|lig)\b/, exclude: /women|bayanlar|u21|u18|2\b/,
+        names: { en: 'Premier League', ar: 'الدوري الإنجليزي الممتاز', tr: 'Premier Lig' },
+        region: { en: 'England', ar: 'إنجلترا', tr: 'İngiltere' },
+    },
+    {
+        id: 'laliga', flag: 'ES', countries: ['ispanya', 'spain', 'espana'],
+        include: /\blaliga\b|\bla liga\b/, exclude: /\b2\b|women|bayanlar/,
+        names: { en: 'LaLiga', ar: 'الدوري الإسباني - لا ليغا', tr: 'LaLiga' },
+        region: { en: 'Spain', ar: 'إسبانيا', tr: 'İspanya' },
+    },
+    {
+        id: 'serie-a', flag: 'IT', countries: ['italya', 'italy', 'italia'],
+        include: /\bserie a\b/, exclude: /women|bayanlar/,
+        names: { en: 'Serie A', ar: 'الدوري الإيطالي - سيري آ', tr: 'Serie A' },
+        region: { en: 'Italy', ar: 'إيطاليا', tr: 'İtalya' },
+    },
+    {
+        id: 'super-lig', flag: 'TR', countries: ['turkiye', 'turkey'],
+        include: /\bsuper lig\b/, exclude: /women|bayanlar/,
+        names: { en: 'Süper Lig', ar: 'الدوري التركي الممتاز', tr: 'Süper Lig' },
+        region: { en: 'Türkiye', ar: 'تركيا', tr: 'Türkiye' },
+    },
+    {
+        id: 'tff-1-lig', flag: 'TR', countries: ['turkiye', 'turkey'],
+        include: /\b1\.? lig\b/, exclude: /super|women|bayanlar/,
+        names: { en: 'TFF 1. Lig', ar: 'دوري الدرجة الأولى التركي', tr: 'TFF 1. Lig' },
+        region: { en: 'Türkiye', ar: 'تركيا', tr: 'Türkiye' },
+    },
+    {
+        id: 'turkiye-kupasi', flag: 'TR', countries: ['turkiye', 'turkey'],
+        include: /kupa|\bcup\b/, exclude: /super kupa|super cup|women|bayanlar/,
+        names: { en: 'Turkish Cup', ar: 'كأس تركيا', tr: 'Türkiye Kupası' },
+        region: { en: 'Türkiye', ar: 'تركيا', tr: 'Türkiye' },
+    },
+    {
+        id: 'champions-league', flag: '', countries: ['avrupa', 'europe'],
+        include: /sampiyonlar|champions league/, exclude: /women|bayanlar/,
+        names: { en: 'Champions League', ar: 'دوري أبطال أوروبا', tr: 'Şampiyonlar Ligi' },
+        region: { en: 'Europe', ar: 'أوروبا', tr: 'Avrupa' },
+    },
+    {
+        id: 'europa-league', flag: '', countries: ['avrupa', 'europe'],
+        include: /\bavrupa ligi\b|\beuropa league\b/, exclude: /konferans|conference/,
+        names: { en: 'Europa League', ar: 'الدوري الأوروبي', tr: 'Avrupa Ligi' },
+        region: { en: 'Europe', ar: 'أوروبا', tr: 'Avrupa' },
+    },
+    {
+        id: 'conference-league', flag: '', countries: ['avrupa', 'europe'],
+        include: /konferans|conference league/,
+        names: { en: 'Conference League', ar: 'دوري المؤتمر الأوروبي', tr: 'Konferans Ligi' },
+        region: { en: 'Europe', ar: 'أوروبا', tr: 'Avrupa' },
+    },
+    {
+        id: 'nations-league', flag: '', countries: ['avrupa', 'europe'],
+        include: /uluslar|nations league/, exclude: /women|bayanlar/,
+        names: { en: 'UEFA Nations League', ar: 'دوري الأمم الأوروبية', tr: 'UEFA Uluslar Ligi' },
+        region: { en: 'Europe', ar: 'أوروبا', tr: 'Avrupa' },
+    },
+    {
+        id: 'world-cup', flag: '', countries: ['dunya', 'world'],
+        include: /dunya kupasi|world cup/, exclude: /women|bayanlar|u20|u17|kulupler|club/,
+        names: { en: 'World Cup', ar: 'كأس العالم', tr: 'Dünya Kupası' },
+        region: { en: 'World', ar: 'العالم', tr: 'Dünya' },
+    },
+];
+
+/* Match a competition from the feed to a featured league. Returns index or -1. */
+const featuredIndex = (comp: Competition): number => {
+    const league = norm(comp.name);
+    const country = norm(comp.country);
+    for (let i = 0; i < FEATURED_LEAGUES.length; i++) {
+        const f = FEATURED_LEAGUES[i];
+        const countryOk =
+            (f.flag && comp.flag && comp.flag.toUpperCase() === f.flag) ||
+            f.countries.some((c) => country.includes(c));
+        if (!countryOk) continue;
+        if (f.exclude && f.exclude.test(league)) continue;
+        if (f.include.test(league)) return i;
+    }
+    return -1;
+};
+
+/* Common stage qualifiers appended after the league name, localized. */
+const SUFFIX_I18N: Record<string, { en: string; ar: string; tr: string }> = {
+    'elemeler': { en: 'Qualification', ar: 'التصفيات', tr: 'Elemeler' },
+    'playofflar': { en: 'Play-offs', ar: 'الملحق', tr: 'Playofflar' },
+    'play offs': { en: 'Play-offs', ar: 'الملحق', tr: 'Playofflar' },
+    'qualification': { en: 'Qualification', ar: 'التصفيات', tr: 'Elemeler' },
+    'grup asamasi': { en: 'Group stage', ar: 'دور المجموعات', tr: 'Grup Aşaması' },
+    'group stage': { en: 'Group stage', ar: 'دور المجموعات', tr: 'Grup Aşaması' },
+    'final': { en: 'Final', ar: 'النهائي', tr: 'Final' },
+};
+
+/* Suffix after the base name (e.g. " - Elemeler"), localized when known. */
+const leagueSuffix = (rawName: string, lang3: 'en' | 'ar' | 'tr'): string => {
+    const m = rawName.match(/\s[-–]\s(.+)$/);
+    if (!m) return '';
+    const raw = m[1];
+    const tr = SUFFIX_I18N[norm(raw)];
+    return tr ? tr[lang3] : raw;
+};
 
 /* Google dark-theme palette */
 const G = {
@@ -275,6 +419,7 @@ const GoogleScoresPage = () => {
     const [sport, setSport] = useState('football');
     const [date, setDate] = useState('today');
     const [statusFilter, setStatusFilter] = useState<'all' | 'LIVE' | 'FINISHED' | 'UPCOMING'>('all');
+    const [leagueFilter, setLeagueFilter] = useState<string>('');
     const [query, setQuery] = useState('');
     const [data, setData] = useState<ScoresV2 | null>(null);
     const [loading, setLoading] = useState(true);
@@ -314,10 +459,41 @@ const GoogleScoresPage = () => {
         return () => clearInterval(id);
     }, [fetchScores]);
 
-    const filtered = useMemo(() => {
+    type AnnotatedComp = Competition & { fIdx: number; displayName: string; displayRegion: string };
+
+    const annotated = useMemo<AnnotatedComp[]>(() => {
         const comps = data?.competitions || [];
+        const lang3 = (language === 'ar' || language === 'tr' ? language : 'en') as 'en' | 'ar' | 'tr';
+        return comps.map((c) => {
+            const fIdx = sport === 'football' ? featuredIndex(c) : -1;
+            let displayName = c.name;
+            let displayRegion = countryLabel(c, language);
+            if (fIdx >= 0) {
+                const f = FEATURED_LEAGUES[fIdx];
+                const suffix = leagueSuffix(c.name, lang3);
+                displayName = f.names[lang3] + (suffix ? ` — ${suffix}` : '');
+                displayRegion = f.region[lang3];
+            }
+            return { ...c, fIdx, displayName, displayRegion };
+        });
+    }, [data, sport, language]);
+
+    /* Featured chips for leagues that actually have matches on the selected day. */
+    const featuredChips = useMemo(() => {
+        const found = new Map<number, { logo: string; flag: string }>();
+        for (const c of annotated) {
+            if (c.fIdx >= 0 && !found.has(c.fIdx)) found.set(c.fIdx, { logo: c.logo, flag: c.flag });
+        }
+        const lang3 = (language === 'ar' || language === 'tr' ? language : 'en') as 'en' | 'ar' | 'tr';
+        return FEATURED_LEAGUES
+            .map((f, i) => ({ id: f.id, idx: i, label: f.names[lang3], flag: f.flag, present: found.has(i), logo: found.get(i)?.logo || '' }))
+            .filter((f) => f.present);
+    }, [annotated, language]);
+
+    const filtered = useMemo(() => {
         const q = query.trim().toLowerCase();
-        return comps
+        return annotated
+            .filter((c) => !leagueFilter || (c.fIdx >= 0 && FEATURED_LEAGUES[c.fIdx].id === leagueFilter))
             .map((c) => ({
                 ...c,
                 matches: c.matches.filter((m) => {
@@ -327,17 +503,22 @@ const GoogleScoresPage = () => {
                         m.home.name.toLowerCase().includes(q) ||
                         m.away.name.toLowerCase().includes(q) ||
                         c.name.toLowerCase().includes(q) ||
+                        c.displayName.toLowerCase().includes(q) ||
                         c.country.toLowerCase().includes(q)
                     );
                 }),
             }))
             .filter((c) => c.matches.length > 0)
             .sort((a, b) => {
+                /* Featured leagues first in the pinned order, then live, then rest. */
+                const fa = a.fIdx >= 0 ? a.fIdx : 999;
+                const fb = b.fIdx >= 0 ? b.fIdx : 999;
+                if (fa !== fb) return fa - fb;
                 const la = a.matches.some((m) => m.status === 'LIVE') ? 0 : 1;
                 const lb = b.matches.some((m) => m.status === 'LIVE') ? 0 : 1;
                 return la - lb;
             });
-    }, [data, statusFilter, query]);
+    }, [annotated, statusFilter, query, leagueFilter]);
 
     const summary = data?.summary || { total: 0, live: 0, finished: 0, upcoming: 0 };
     const canonicalUrl = `${SITE_ORIGIN.replace(/\/$/, '')}/sports/scores`;
@@ -407,7 +588,7 @@ const GoogleScoresPage = () => {
                                 key={s.id}
                                 role="tab"
                                 aria-selected={sport === s.id}
-                                onClick={() => setSport(s.id)}
+                                onClick={() => { setSport(s.id); setLeagueFilter(''); }}
                                 className="g-chip flex items-center gap-2 px-4 py-2 rounded-full text-[13px] font-medium whitespace-nowrap transition-colors"
                                 style={
                                     sport === s.id
@@ -419,6 +600,45 @@ const GoogleScoresPage = () => {
                             </button>
                         ))}
                     </div>
+
+                    {/* Featured league chips (football only, when present on this day) */}
+                    {featuredChips.length > 0 && (
+                        <div className="flex gap-2 overflow-x-auto pb-1 mb-3 no-scrollbar">
+                            {featuredChips.map((f) => (
+                                <button
+                                    key={f.id}
+                                    onClick={() => setLeagueFilter(leagueFilter === f.id ? '' : f.id)}
+                                    aria-pressed={leagueFilter === f.id}
+                                    className="g-chip flex items-center gap-2 px-3.5 py-1.5 rounded-full text-[12px] font-medium whitespace-nowrap transition-colors"
+                                    style={
+                                        leagueFilter === f.id
+                                            ? { background: 'rgba(138,180,248,0.18)', color: G.blue, border: `1px solid rgba(138,180,248,0.5)`, fontWeight: 700 }
+                                            : { background: G.card, color: G.text, border: `1px solid ${G.border}` }
+                                    }
+                                >
+                                    {f.logo ? (
+                                        <img src={f.logo} alt="" className="w-4 h-4 object-contain" loading="lazy" />
+                                    ) : f.flag ? (
+                                        <span className="w-4 h-3 overflow-hidden rounded-[2px]">
+                                            <CountryFlag code={f.flag} />
+                                        </span>
+                                    ) : (
+                                        <Trophy size={12} style={{ color: G.blue }} />
+                                    )}
+                                    {f.label}
+                                </button>
+                            ))}
+                            {leagueFilter && (
+                                <button
+                                    onClick={() => setLeagueFilter('')}
+                                    className="flex items-center gap-1 px-3 py-1.5 rounded-full text-[12px] font-medium whitespace-nowrap"
+                                    style={{ color: G.dim, border: `1px dashed ${G.border}` }}
+                                >
+                                    <X size={12} /> {t.all}
+                                </button>
+                            )}
+                        </div>
+                    )}
 
                     {/* Date strip */}
                     <div
@@ -524,38 +744,59 @@ const GoogleScoresPage = () => {
                     )}
 
                     <div className="space-y-6">
-                        {filtered.map((comp) => (
-                            <section key={comp.id}>
-                                {/* Competition header (Google league strip) */}
-                                <header className="flex items-center gap-2.5 px-1 mb-2.5">
-                                    {comp.flag ? (
-                                        <span className="w-5 h-[14px] overflow-hidden rounded-[2px] shrink-0">
-                                            <CountryFlag code={comp.flag} />
-                                        </span>
-                                    ) : comp.logo ? (
-                                        <img src={comp.logo} alt="" className="w-[18px] h-[18px] object-contain shrink-0" loading="lazy" />
-                                    ) : (
-                                        <Globe size={14} style={{ color: G.dim }} className="shrink-0" />
+                        {filtered.map((comp, ci) => {
+                            const isFeatured = comp.fIdx >= 0;
+                            const prevFeatured = ci > 0 ? filtered[ci - 1].fIdx >= 0 : true;
+                            const showDivider = !isFeatured && prevFeatured && ci > 0 && !leagueFilter;
+                            return (
+                                <React.Fragment key={comp.id}>
+                                    {showDivider && (
+                                        <div className="flex items-center gap-3 pt-2" aria-hidden>
+                                            <span className="flex-1 h-px" style={{ background: G.border }} />
+                                            <span className="text-[11px] font-medium uppercase tracking-widest" style={{ color: G.dim }}>
+                                                {t.otherComps}
+                                            </span>
+                                            <span className="flex-1 h-px" style={{ background: G.border }} />
+                                        </div>
                                     )}
-                                    <h2 className="text-[14px] font-bold truncate" style={{ color: G.text }}>
-                                        {comp.name}
-                                    </h2>
-                                    <span className="text-[12px] truncate" style={{ color: G.dim }}>
-                                        · {countryLabel(comp, language)}
-                                    </span>
-                                    <span className="ms-auto text-[11px] tabular-nums shrink-0" style={{ color: G.dim }}>
-                                        {comp.matches.length} {t.matches}
-                                    </span>
-                                </header>
+                                    <section>
+                                        {/* Competition header (Google league strip) */}
+                                        <header className="flex items-center gap-2.5 px-1 mb-2.5">
+                                            {comp.logo ? (
+                                                <img src={comp.logo} alt="" className="w-[22px] h-[22px] object-contain shrink-0 drop-shadow" loading="lazy" />
+                                            ) : comp.flag ? (
+                                                <span className="w-5 h-[14px] overflow-hidden rounded-[2px] shrink-0">
+                                                    <CountryFlag code={comp.flag} />
+                                                </span>
+                                            ) : (
+                                                <Globe size={14} style={{ color: G.dim }} className="shrink-0" />
+                                            )}
+                                            <h2 className="text-[14px] font-bold truncate" style={{ color: isFeatured ? G.blue : G.text }}>
+                                                {comp.displayName}
+                                            </h2>
+                                            {comp.logo && comp.flag && (
+                                                <span className="w-4 h-3 overflow-hidden rounded-[2px] shrink-0">
+                                                    <CountryFlag code={comp.flag} />
+                                                </span>
+                                            )}
+                                            <span className="text-[12px] truncate" style={{ color: G.dim }}>
+                                                · {comp.displayRegion}
+                                            </span>
+                                            <span className="ms-auto text-[11px] tabular-nums shrink-0" style={{ color: G.dim }}>
+                                                {comp.matches.length} {t.matches}
+                                            </span>
+                                        </header>
 
-                                {/* Match cards grid */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-                                    {comp.matches.map((m) => (
-                                        <MatchCard key={m.id} m={m} t={t} />
-                                    ))}
-                                </div>
-                            </section>
-                        ))}
+                                        {/* Match cards grid */}
+                                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+                                            {comp.matches.map((m) => (
+                                                <MatchCard key={m.id} m={m} t={t} />
+                                            ))}
+                                        </div>
+                                    </section>
+                                </React.Fragment>
+                            );
+                        })}
                     </div>
                 </div>
             </main>
