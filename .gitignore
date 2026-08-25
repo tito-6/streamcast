@@ -1,6 +1,9 @@
 node_modules/
 .next/
 .DS_Store
+venv/
+.venv/
+backups/
 *.log
 *.zip
 .env
