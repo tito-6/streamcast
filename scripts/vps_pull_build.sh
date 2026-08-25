@@ -3,37 +3,40 @@
 # Or from your PC: Get-Content scripts/vps_pull_build.sh -Raw | ssh root@72.62.91.240 bash
 set -euo pipefail
 
-REPO="${STREAMCAST_ROOT:-/root/streamcast}"
+REPO="${STREAMCAST_ROOT:-/opt/streamcast}"
+SITE="/etc/nginx/sites-available/sportevent.online"
 cd "$REPO"
 
 echo "==> git pull"
 git pull origin master
 
-if [[ -f "$REPO/nginx_production_hls.conf" ]]; then
-  echo "==> nginx site"
-  cp "$REPO/nginx_production_hls.conf" /etc/nginx/sites-available/default
+if [[ -f "$REPO/deploy/nginx/sportevent.online.conf" ]]; then
+  echo "==> nginx isolated site"
+  cp "$REPO/deploy/nginx/sportevent.online.conf" "$SITE"
+  ln -sfn "$SITE" /etc/nginx/sites-enabled/sportevent.online
+  rm -f /etc/nginx/sites-enabled/default
   nginx -t
   systemctl reload nginx
 fi
 
 echo "==> Go API"
 cd "$REPO/backend"
+chmod +x start.sh
 go build -o main cmd/api/main.go
-pkill -f '/root/streamcast/backend/main' 2>/dev/null || true
-nohup ./main > app.log 2>&1 &
+if command -v pm2 >/dev/null 2>&1 && pm2 describe streamcast-backend >/dev/null 2>&1; then
+  pm2 restart streamcast-backend
+else
+  pkill -f '/opt/streamcast/backend/main' 2>/dev/null || true
+  nohup ./start.sh > app.log 2>&1 &
+fi
 sleep 1
 
 echo "==> Frontend"
 cd "$REPO/frontend"
 npm install
 npm run build
-rm -rf /var/www/frontend_static
-mkdir -p /var/www/frontend_static
-cp -r .next/static/* /var/www/frontend_static/
-chown -R www-data:www-data /var/www/frontend_static
-
-if command -v pm2 >/dev/null 2>&1; then
-  pm2 restart streamcast-frontend 2>/dev/null || pm2 restart all 2>/dev/null || true
+if command -v pm2 >/dev/null 2>&1 && pm2 describe streamcast-frontend >/dev/null 2>&1; then
+  pm2 restart streamcast-frontend
 fi
 
 echo "==> Sports engine (port 8001)"
@@ -41,15 +44,14 @@ cd "$REPO/services/sports_engine"
 if [[ -x venv/bin/pip ]]; then
   venv/bin/pip install -q -r requirements.txt
 else
-  python3 -m pip install -q -r requirements.txt 2>/dev/null || pip3 install -q -r requirements.txt
+  python3 -m venv venv
+  venv/bin/pip install -q -r requirements.txt
 fi
-if command -v pm2 >/dev/null 2>&1 && pm2 describe sports-engine >/dev/null 2>&1; then
-  pm2 restart sports-engine
+if command -v pm2 >/dev/null 2>&1 && pm2 describe streamcast-sports-engine >/dev/null 2>&1; then
+  pm2 restart streamcast-sports-engine
 else
   pkill -f 'uvicorn main:app' 2>/dev/null || true
-  pkill -f 'uvicorn.*8001' 2>/dev/null || true
-  sleep 1
-  nohup python3 -m uvicorn main:app --host 0.0.0.0 --port 8001 >> sports_engine.log 2>&1 &
+  nohup ./venv/bin/python main.py >> sports_engine.log 2>&1 &
 fi
 sleep 2
 curl -sf "http://127.0.0.1:8001/" >/dev/null && echo "Sports engine: OK" || echo "Sports engine: check sports_engine.log"

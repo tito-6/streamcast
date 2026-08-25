@@ -8,5 +8,5 @@ $scriptPath = Join-Path $here "scripts\vps_pull_build.sh"
 if (-not (Test-Path $scriptPath)) {
     Write-Error "Missing $scriptPath"
 }
-$root = if ($env:STREAMCAST_ROOT) { $env:STREAMCAST_ROOT } else { "/root/streamcast" }
+$root = if ($env:STREAMCAST_ROOT) { $env:STREAMCAST_ROOT } else { "/opt/streamcast" }
 Get-Content -Raw -Path $scriptPath | ssh root@72.62.91.240 "export STREAMCAST_ROOT=$root; bash -s"
